@@ -94,7 +94,7 @@ def enclose_single(x):
     if not len(x): return x
 #   if x[0] != "\xe2\x80\x98":
 #    return "\xe2\x80\x98" + x + "\xe2\x80\x99"
-    return f"'{x}'"
+    return f"`{x}'"
 
 # ~~~~~~~~~~~~~~
 # Variable setup
