@@ -120,6 +120,10 @@ illegalchars = badwin + badtex
 # Also: characters that are bad for the text title in LaTeX
 badtitle = "_#"
 
+def hash_escape(s):
+    '''Escape hash character.'''
+    return s.replace('#', r'\#')
+
 # ~~~~~~~~~~~~~~~
 # File operations
 # ~~~~~~~~~~~~~~~
@@ -221,7 +225,10 @@ for text in root.findall('interlinear-text'):
                             txt = " " + item.text #.encode('utf-8')
                             fullline += txt
                         if item.attrib['type'] == 'punct':
-                            txt = item.text #.encode('utf-8')
+                            txt = item.text or '' #.encode('utf-8')
+                            if item.text is None:
+                                sys.stderr.write('Empty punctuation found\n')
+                                ET.dump(item)
                             if txt == "\\": txt = ''    # Kill weird backslashes
                             fullline += txt
 
@@ -238,30 +245,35 @@ for text in root.findall('interlinear-text'):
 
             # Go through morphemes for second and third lines
 
-            for morpheme in paragraph.iter('morph'):
-                txt = ""    # text for each morpheme
-                cf = ""     # cf for each morpheme
-                gls = ""    # gloss for each morpheme
-                for item in morpheme.iter('item'):
-                    if 'type' in item.attrib:
-                        if item.attrib['type'] == 'txt':
-                            txt = killspace(item.text) #.encode("utf-8")
-                        if item.attrib['type'] == 'cf':
-                            cf = killspace(item.text) #.encode("utf-8")
-                        if item.attrib['type'] == 'gls':
-                            gls = killspace(item.text) #.encode("utf-8")
-                            gls = toSmallCaps(gls)
-
-                # Add a hyphen to the beginning or end of a gloss morpheme if the corresponding text has it.
-                if len(txt) and len(gls):
-                    if txt[0] == '-' and gls[0] != '-':
-                        gls = '-' + gls
-                    if txt[-1] == '-' and gls[-1] != '-':
-                        gls = gls + '-'
-
-                linemorphs.append(txt)
-                linecfs.append(cf)
-                lineglosses.append(gls)
+            for morphword in paragraph.iter('morphemes'):
+                for morpheme in morphword.iter('morph'):
+                    txt = ""    # text for each morpheme
+                    cf = ""     # cf for each morpheme
+                    gls = ""    # gloss for each morpheme
+                    for item in morpheme.iter('item'):
+                        if 'type' in item.attrib:
+                            if item.attrib['type'] == 'txt':
+                                txt = killspace(item.text) #.encode("utf-8")
+                                # TODO: escape badtex chars here, e.g. #
+                            if item.attrib['type'] == 'cf':
+                                cf = killspace(item.text) #.encode("utf-8")
+                            if item.attrib['type'] == 'gls':
+                                gls = killspace(item.text) #.encode("utf-8")
+                                gls = toSmallCaps(gls)
+    
+                    # Add a hyphen to the beginning or end of a gloss morpheme if the corresponding text has it.
+                    if len(txt) and len(gls):
+                        if txt[0] == '-' and gls[0] != '-':
+                            gls = '-' + gls
+                        if txt[-1] == '-' and gls[-1] != '-':
+                            gls = gls + '-'
+    
+                    linemorphs.append(txt)
+                    linecfs.append(cf)
+                    lineglosses.append(gls)
+                linemorphs.append(' ')
+                linecfs.append(' ')
+                lineglosses.append(' ')
 
                 # Get free translation (held within <phrase>) for the last line
 
@@ -276,27 +288,26 @@ for text in root.findall('interlinear-text'):
 
         label = title       # This may end up being something different
 
-        outfile.write("\\begin{example}\n")
-        outfile.write("\\label{ex:" + label + "}\n")
+        outfile.write("\\begin{exe}\n")
+        outfile.write("\\label{ex:" + label + "} \\ex\n")
         if fourline:
             outfile.write("\\glll \n")
-        outfile.write(fullline + r"\\" + "\n")
+        outfile.write(hash_escape(fullline) + r"\\" + "\n")
         if fourline:
             for morph in linemorphs:
-                #outfile.write(morph+" ")
-                outfile.write(morph)
+                outfile.write(hash_escape(morph))
             outfile.write(r'\\' + "\n")
             for cf in linecfs:
-                outfile.write(cf)
+                outfile.write(hash_escape(cf))
             outfile.write(r'\\' + "\n")
             for gls in lineglosses:
                 if gls == '':
                     gls = "{}"
                 #outfile.write(gls+" ")
-                outfile.write(gls)
+                outfile.write(hash_escape(gls))
             outfile.write(r'\\' + "\n")
-        outfile.write("\\glt " + translation + "\n")
-        outfile.write("\\glend\n\\end{example}\n\n")
+        outfile.write("\\glt " + hash_escape(translation) + "\n")
+        outfile.write("\\glend\n\\end{exe}\n\n")
 
     outfile.close()
 
