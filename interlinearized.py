@@ -294,9 +294,9 @@ for text in root.findall('interlinear-text'):
             outfile.write("\\glll \n")
         outfile.write(hash_escape(fullline) + r"\\" + "\n")
         if fourline:
-            for morph in linemorphs:
-                outfile.write(hash_escape(morph))
-            outfile.write(r'\\' + "\n")
+#            for morph in linemorphs:
+#                outfile.write(hash_escape(morph))
+#            outfile.write(r'\\' + "\n")
             for cf in linecfs:
                 outfile.write(hash_escape(cf))
             outfile.write(r'\\' + "\n")
