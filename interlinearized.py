@@ -77,9 +77,11 @@ def toSmallCaps(word):
     for char in word:
         if char in 'ABCDEFGHIJKLMNOPQRSTUVWXYZ':
             if not incaps:
-                newword += r'\textsc{'
+                newword += r'\D{'
                 incaps = True
             newword += char.lower()
+        elif char == '.':
+            newword += char
         else:
             if incaps:
                 incaps = False
