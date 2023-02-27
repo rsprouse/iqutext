@@ -137,7 +137,7 @@ def clean_firstline(w):
     if re.match(r'^\s*\d+\s*$', w):
         return ' {}'
     w = re.sub(r'\d', '', w)
-    return w
+    return w.replace('=', '')
 
 newpath = str(now.year) + "-" + str(now.month).zfill(2) + "-" + str(now.day).zfill(2) + "_" + str(now.hour).zfill(2) + str(now.minute).zfill(2)
 newpath = os.path.join(thispath,newpath)
