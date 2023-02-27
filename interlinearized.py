@@ -1,7 +1,7 @@
 # Script for converting interlinearized FLEx texts into LaTeX
 # Greg Finley, March 2013
 
-import sys, os, shutil
+import sys, os, shutil, re
 import xml.etree.ElementTree as ET
 import datetime
 import string
@@ -130,6 +130,15 @@ def hash_escape(s):
 # File operations
 # ~~~~~~~~~~~~~~~
 
+def clean_firstline(w):
+    '''
+    Process text for first interlinear line.
+    '''
+    if re.match(r'^\s*\d+\s*$', w):
+        return ' {}'
+    w = re.sub(r'\d', '', w)
+    return w
+
 newpath = str(now.year) + "-" + str(now.month).zfill(2) + "-" + str(now.day).zfill(2) + "_" + str(now.hour).zfill(2) + str(now.minute).zfill(2)
 newpath = os.path.join(thispath,newpath)
 defaultpath = os.path.join(thispath,"default")
@@ -225,14 +234,14 @@ for text in root.findall('interlinear-text'):
 
                         if item.attrib['type'] == 'txt' or item.attrib['type'] == 'cf':
                             txt = " " + item.text #.encode('utf-8')
-                            fullline += txt
+                            fullline += clean_firstline(txt)
                         if item.attrib['type'] == 'punct':
                             txt = item.text or '' #.encode('utf-8')
                             if item.text is None:
                                 sys.stderr.write('Empty punctuation found\n')
                                 ET.dump(item)
                             if txt == "\\": txt = ''    # Kill weird backslashes
-                            fullline += txt
+                            fullline += clean_firstline(txt)
 
             # Post-processing:
             # Punctuation that should not behave like other punctuation:
