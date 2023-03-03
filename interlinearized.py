@@ -10,6 +10,11 @@ from tkinter import filedialog
 
 encoding = 'utf-8'
 
+# Note that upper/lower bar-i do not have precomposed acute forms.
+vchars = 'àÀáÁaAèÈéÉeEìÌíÍiIƗɨòÒóÓoOùÙúÚuU'
+vchars_not_i = 'àÀáÁaAèÈéÉeEƗɨòÒóÓoOùÙúÚuU'
+cchars = 'bBcCdDfFgGhHjJkKlLmMnNpPqQrRsStTvVwWxXyYzZ'
+
 class Application(tkinter.Frame):
 
     def createWidgets(self):
@@ -98,6 +103,57 @@ def enclose_single(x):
 #    return "\xe2\x80\x98" + x + "\xe2\x80\x99"
     return f"`{x}'"
 
+def hash_escape(s):
+    '''Escape hash character.'''
+    return s.replace('#', r'\#')
+
+def clean_firstline(w):
+    '''
+    Process text for first interlinear line.
+    '''
+    if re.match(r'^\s*\d+\s*$', w):
+        return ' {}'
+    w = re.sub(r'\d', '', w)
+    return w.replace('=', '')
+
+def replace_tones(w):
+    '''
+    Replace H|L with latex replacements.
+    '''
+    return re.sub('(HH|LL|HL|H|L)', r'\\super{\1}', w)
+
+def replace_nums(w):
+    '''
+    Replace numerals with latex replacements.
+    '''
+    mapdict = {
+        '0': r'\super{HL}$\varnothing$',
+        '1': r'$\varnothing$',
+        '2': r'\super{HLL}$\varnothing$',
+        '3': r'\super{H}$\varnothing$\super{LL}',
+        '4': r'\super{H}$\varnothing$\super{LL}',
+        '5': r'$\varnothing$',
+        '6': r'\super{H}$\varnothing$\super{LL}',
+        '7': r'$\varnothing$',
+        '8': r'\super{H}$\varnothing$\super{LL}'
+    }
+    return w.translate(str.maketrans(mapdict))
+
+def replace_spellings(w):
+    '''
+    Do spelling replacements.
+    '''
+    w = re.sub(rf'(k|K)w([{vchars}])', r'\1\\super{w}\2', w)
+    w = re.sub(r'[nN](ì|Ì|í|Í|i|I)(à|À|á|Á|a|A)', r'ɲ\1\2', w)
+
+    # These must be ordered.
+    w = re.sub(r'[sS]([ìÌíÍiI])([àÀáÁaAùÙúÚuU])', r'ʃ\1\2', w)
+    w = re.sub(r'[sS]([ìÌíÍiI])', r'ʃ\1', w)
+    w = w.translate(str.maketrans({'j': 'h', 'J': 'H'}))
+    w = w.translate(str.maketrans({'y': 'j', 'Y': 'J'}))
+    w = re.sub(rf'([{cchars}])i([{vchars_not_i}])', r'\1\\super{j}\2', w)
+    return w
+
 # ~~~~~~~~~~~~~~
 # Variable setup
 # ~~~~~~~~~~~~~~
@@ -122,22 +178,9 @@ illegalchars = badwin + badtex
 # Also: characters that are bad for the text title in LaTeX
 badtitle = "_#"
 
-def hash_escape(s):
-    '''Escape hash character.'''
-    return s.replace('#', r'\#')
-
 # ~~~~~~~~~~~~~~~
 # File operations
 # ~~~~~~~~~~~~~~~
-
-def clean_firstline(w):
-    '''
-    Process text for first interlinear line.
-    '''
-    if re.match(r'^\s*\d+\s*$', w):
-        return ' {}'
-    w = re.sub(r'\d', '', w)
-    return w.replace('=', '')
 
 newpath = str(now.year) + "-" + str(now.month).zfill(2) + "-" + str(now.day).zfill(2) + "_" + str(now.hour).zfill(2) + str(now.minute).zfill(2)
 newpath = os.path.join(thispath,newpath)
@@ -225,7 +268,9 @@ for text in root.findall('interlinear-text'):
 
             words = phrase.iter('word')
 
-            for word in words:
+            in_single_quote = False
+            in_double_quote = False
+            for widx, word in enumerate(words):
                 for item in word:
                     if item.tag == "item" and 'type' in item.attrib:
 
@@ -233,10 +278,20 @@ for text in root.findall('interlinear-text'):
                         # Add a leading space if it's not punctuation.
 
                         if item.attrib['type'] == 'txt' or item.attrib['type'] == 'cf':
-                            txt = " " + item.text #.encode('utf-8')
+                            if in_single_quote or in_double_quote:
+                                txt = item.text #.encode('utf-8')
+                            else:
+                                txt = " " + item.text #.encode('utf-8')
                             fullline += clean_firstline(txt)
                         if item.attrib['type'] == 'punct':
-                            txt = item.text or '' #.encode('utf-8')
+                            if item.text in ("'", '"'):
+                                txt = f' {item.text}'
+                                if item.text == "'":
+                                    in_single_quote = not in_single_quote
+                                if item.text == '"':
+                                    in_double_quote = not in_double_quote
+                            else:
+                                txt = item.text or '' #.encode('utf-8')
                             if item.text is None:
                                 sys.stderr.write('Empty punctuation found\n')
                                 ET.dump(item)
@@ -245,7 +300,7 @@ for text in root.findall('interlinear-text'):
 
             # Post-processing:
             # Punctuation that should not behave like other punctuation:
-            leftsidepunc = ["`", "\xe2\x80\x98", "(", "[", "{", "\xe2\x80\x9c"]
+            leftsidepunc = ["`", "«", "\xe2\x80\x98", "(", "[", "{", "\xe2\x80\x9c"]
             for punc in leftsidepunc:
                 fullline = fullline.replace(punc + " ", " " + punc)
             nospacepunc = ["-", "\xe2\x80\x94", "\xe2\x80\x93"]
@@ -253,6 +308,7 @@ for text in root.findall('interlinear-text'):
                 fullline = fullline.replace(punc + " ", punc)
             # Remove leading space (necessary?)
             if fullline[0] == ' ': fullline = fullline[1:]
+            fullline = replace_spellings(fullline)
 
             # Go through morphemes for second and third lines
 
@@ -268,6 +324,9 @@ for text in root.findall('interlinear-text'):
                                 # TODO: escape badtex chars here, e.g. #
                             if item.attrib['type'] == 'cf':
                                 cf = killspace(item.text) #.encode("utf-8")
+                                cf = replace_tones(cf)
+                                cf = replace_spellings(cf)
+                                cf = replace_nums(cf)
                             if item.attrib['type'] == 'gls':
                                 gls = killspace(item.text) #.encode("utf-8")
                                 gls = toSmallCaps(gls)
@@ -297,7 +356,7 @@ for text in root.findall('interlinear-text'):
                         translation = enclose_single(translation)
                         break
 
-        label = title       # This may end up being something different
+        label = title.replace('_', '')       # This may end up being something different
 
         outfile.write("\\begin{exe}\n")
         outfile.write("\\label{ex:" + label + "} \\ex\n")
