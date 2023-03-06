@@ -98,10 +98,10 @@ def toSmallCaps(word):
 # Encloses a (translation) line in single quotes
 
 def enclose_single(x):
-    if not len(x): return x
+    # For future reference, double left/right quotes: “ , ”
+    return f"‘{x}’" if len(x) and not x.startswith("‘") else x
 #   if x[0] != "\xe2\x80\x98":
 #    return "\xe2\x80\x98" + x + "\xe2\x80\x99"
-    return f"`{x}'"
 
 def hash_escape(s):
     '''Escape hash character.'''
@@ -300,7 +300,7 @@ for text in root.findall('interlinear-text'):
 
             # Post-processing:
             # Punctuation that should not behave like other punctuation:
-            leftsidepunc = ["`", "«", "\xe2\x80\x98", "(", "[", "{", "\xe2\x80\x9c"]
+            leftsidepunc = ["“", "``", "`", "«", "\xe2\x80\x98", "(", "[", "{", "\xe2\x80\x9c"]
             for punc in leftsidepunc:
                 fullline = fullline.replace(punc + " ", " " + punc)
             nospacepunc = ["-", "\xe2\x80\x94", "\xe2\x80\x93"]
