@@ -184,10 +184,13 @@ badtitle = "_#"
 
 newpath = str(now.year) + "-" + str(now.month).zfill(2) + "-" + str(now.day).zfill(2) + "_" + str(now.hour).zfill(2) + str(now.minute).zfill(2)
 newpath = os.path.join(thispath,newpath)
+newcommpath = os.path.join(newpath, 'community')
 defaultpath = os.path.join(thispath,"default")
 
 if not os.path.exists(newpath):
     os.makedirs(newpath)
+if not os.path.exists(newcommpath):
+    os.makedirs(newcommpath)
 
 masterfile = open(os.path.join(newpath, masterfilename),'w', encoding=encoding)
 masterfile.write("\\newcommand{\\texttitle}[1]{\chapter{#1}\setcounter{equation}{0}}\n")
@@ -238,10 +241,16 @@ for text in root.findall('interlinear-text'):
     while os.path.exists(nextfilepath):
         titleascii = title + "2"     # There's a better way to do this
         nextfilepath = os.path.join(newpath, titleascii + ".tex")
+    nextcommfilepath = os.path.join(newcommpath, titleascii + ".tex")
+    while os.path.exists(nextcommfilepath):
+        titleascii = title + "2"     # There's a better way to do this
+        nextcommfilepath = os.path.join(newcommpath, titleascii + ".tex")
 
     # Open up a new output file for each text
     outfile = open(nextfilepath,'w', encoding=encoding)
+    outcommfile = open(nextcommfilepath,'w', encoding=encoding)
     outfile.write("\\texttitle{" + textitle + "}\n")
+    outcommfile.write("\\texttitle{" + textitle + "}\n")
     masterfile.write("\\input{" + title + "}\n")
 
     # Go through each "paragraph" and print the 4-line interlinearization for each
@@ -252,7 +261,8 @@ for text in root.findall('interlinear-text'):
         linemorphs = []     # contains all morphemes in a given paragraph/line
         linecfs = []        # contains all cfs in a given paragraph/line
         lineglosses = []    # contains all glosses in a given paragraph/line
-        translation = ''    # free translation for each line
+        translation = ''    # English free translation for each line
+        sptranslation = ''    # Spanish free translation for each line
 
 #       This is how it used to work. Then FLEx started putting 'word' under each 'phrases' XML tag for some reason.
 #        phrases = paragraph.iter('phrase')
@@ -351,9 +361,11 @@ for text in root.findall('interlinear-text'):
                     if item.tag == 'item' and 'type' in item.attrib and item.attrib['type'] == 'gls':
                         translation = item.text
                         if translation == None: translation = ""
-                        translation = translation #.encode("utf-8")
-                        # Enclose in single quotes:
-                        translation = enclose_single(translation)
+                        break
+                for item in phrase:
+                    if item.tag == 'item' and 'type' in item.attrib and item.attrib['type'] == 'gls' and item.attrib['lang'] == 'es':
+                        sptranslation = item.text
+                        if sptranslation == None: sptranslation = ""
                         break
 
         label = title.replace('_', '')       # This may end up being something different
@@ -376,9 +388,28 @@ for text in root.findall('interlinear-text'):
                 #outfile.write(gls+" ")
                 outfile.write(hash_escape(gls))
             outfile.write(r'\\' + "\n")
-        outfile.write("\\glt " + hash_escape(translation) + "\n")
+        outfile.write("\\glt " + hash_escape(enclose_single(translation)) + "\n")
         outfile.write("\\glend\n\\end{exe}\n\n")
 
+        # Community texts
+        outcommfile.write("\\begin{exe}\n")
+        outcommfile.write("\\label{ex:" + label + "} \\ex\n")
+        if fourline:
+            outcommfile.write("\\glll \n")
+        outcommfile.write(hash_escape(fullline) + r"\\" + "\n")
+#        for cf in linecfs:
+#            outcommfile.write(hash_escape(cf))
+#        outcommfile.write(r'\\' + "\n")
+#        for gls in lineglosses:
+#            if gls == '':
+#                gls = "{}"
+#            #outcommfile.write(gls+" ")
+#            outcommfile.write(hash_escape(gls))
+        outcommfile.write("\\glt " + hash_escape(sptranslation) + "\n")
+        outcommfile.write("\\glt " + hash_escape(translation) + "\n")
+        outcommfile.write("\\glend\n\\end{exe}\n\n")
+
     outfile.close()
+    outcommfile.close()
 
 masterfile.close()
