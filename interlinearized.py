@@ -107,14 +107,16 @@ def hash_escape(s):
     '''Escape hash character.'''
     return s.replace('#', r'\#')
 
-def clean_firstline(w):
+def clean_firstline(w, community=False):
     '''
     Process text for first interlinear line.
     '''
-    if re.match(r'^\s*\d+\s*$', w):
+    if re.match(r'^\s*\d+\s*$', w) and community is False:
         return ' {}'
     w = re.sub(r'\d', '', w)
-    return w.replace('=', '')
+    if community is False:
+        w = w.replace('=', '')
+    return w
 
 def replace_tones(w):
     '''
@@ -258,6 +260,7 @@ for text in root.findall('interlinear-text'):
     for paragraph in text.iter('paragraph'):
 
         fullline = ''       # first line of text
+        commfullline = ''   # first line of text, community text output
         linemorphs = []     # contains all morphemes in a given paragraph/line
         linecfs = []        # contains all cfs in a given paragraph/line
         lineglosses = []    # contains all glosses in a given paragraph/line
@@ -293,6 +296,7 @@ for text in root.findall('interlinear-text'):
                             else:
                                 txt = " " + item.text #.encode('utf-8')
                             fullline += clean_firstline(txt)
+                            commfullline += clean_firstline(txt, community=True)
                         if item.attrib['type'] == 'punct':
                             if item.text in ("'", '"'):
                                 txt = f' {item.text}'
@@ -307,6 +311,7 @@ for text in root.findall('interlinear-text'):
                                 ET.dump(item)
                             if txt == "\\": txt = ''    # Kill weird backslashes
                             fullline += clean_firstline(txt)
+                            commfullline += clean_firstline(txt, community=True)
 
             # Post-processing:
             # Punctuation that should not behave like other punctuation:
@@ -319,6 +324,7 @@ for text in root.findall('interlinear-text'):
             # Remove leading space (necessary?)
             if fullline[0] == ' ': fullline = fullline[1:]
             fullline = replace_spellings(fullline)
+            if commfullline[0] == ' ': commfullline = commfullline[1:]
 
             # Go through morphemes for second and third lines
 
@@ -394,9 +400,7 @@ for text in root.findall('interlinear-text'):
         # Community texts
         outcommfile.write("\\begin{exe}\n")
         outcommfile.write("\\label{ex:" + label + "} \\ex\n")
-        if fourline:
-            outcommfile.write("\\glll \n")
-        outcommfile.write(hash_escape(fullline) + r"\\" + "\n")
+        outcommfile.write("\\iqu{" + hash_escape(commfullline) + r"}\\" + "\n")
 #        for cf in linecfs:
 #            outcommfile.write(hash_escape(cf))
 #        outcommfile.write(r'\\' + "\n")
@@ -405,9 +409,9 @@ for text in root.findall('interlinear-text'):
 #                gls = "{}"
 #            #outcommfile.write(gls+" ")
 #            outcommfile.write(hash_escape(gls))
-        outcommfile.write("\\glt " + hash_escape(sptranslation) + "\n")
-        outcommfile.write("\\glt " + hash_escape(translation) + "\n")
-        outcommfile.write("\\glend\n\\end{exe}\n\n")
+        outcommfile.write("\\spq{" + hash_escape(sptranslation) + "}\n")
+        outcommfile.write("\\eng{" + hash_escape(translation) + "}\n")
+        outcommfile.write("\\end{exe}\n\\vspace{-0.20in}\n")
 
     outfile.close()
     outcommfile.close()
