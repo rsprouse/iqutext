@@ -318,9 +318,12 @@ for text in root.findall('interlinear-text'):
             leftsidepunc = ["“", "``", "`", "«", "\xe2\x80\x98", "(", "[", "{", "\xe2\x80\x9c"]
             for punc in leftsidepunc:
                 fullline = fullline.replace(punc + " ", " " + punc)
+                commfullline = commfullline.replace(punc + " ", " " + punc)
             nospacepunc = ["-", "\xe2\x80\x94", "\xe2\x80\x93"]
             for punc in nospacepunc:
                 fullline = fullline.replace(punc + " ", punc)
+            # Add space before emdash
+            commfullline = commfullline.replace('—', ' —')
             # Remove leading space (necessary?)
             if fullline[0] == ' ': fullline = fullline[1:]
             fullline = replace_spellings(fullline)
@@ -364,7 +367,7 @@ for text in root.findall('interlinear-text'):
                 # Get free translation (held within <phrase>) for the last line
 
                 for item in phrase:
-                    if item.tag == 'item' and 'type' in item.attrib and item.attrib['type'] == 'gls':
+                    if item.tag == 'item' and 'type' in item.attrib and item.attrib['type'] == 'gls' and item.attrib['lang'] == 'en':
                         translation = item.text
                         if translation == None: translation = ""
                         break
@@ -409,7 +412,7 @@ for text in root.findall('interlinear-text'):
 #                gls = "{}"
 #            #outcommfile.write(gls+" ")
 #            outcommfile.write(hash_escape(gls))
-        outcommfile.write("\\spq{" + hash_escape(sptranslation) + "}\n")
+        outcommfile.write("\\spq{" + hash_escape(sptranslation) + r"}\\" + "\n")
         outcommfile.write("\\eng{" + hash_escape(translation) + "}\n")
         outcommfile.write("\\end{exe}\n\\vspace{-0.20in}\n")
 
