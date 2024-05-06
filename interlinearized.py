@@ -195,7 +195,7 @@ if not os.path.exists(newcommpath):
     os.makedirs(newcommpath)
 
 masterfile = open(os.path.join(newpath, masterfilename),'w', encoding=encoding)
-masterfile.write("\\newcommand{\\texttitle}[1]{\chapter{#1}\setcounter{equation}{0}}\n")
+#masterfile.write("\\newcommand{\\texttitle}[1]{\chapter{#1}\setcounter{equation}{0}}\n")
 
 # Get the XML. This is where most of the processing happens.
 
@@ -251,8 +251,8 @@ for text in root.findall('interlinear-text'):
     # Open up a new output file for each text
     outfile = open(nextfilepath,'w', encoding=encoding)
     outcommfile = open(nextcommfilepath,'w', encoding=encoding)
-    outfile.write("\\texttitle{" + textitle + "}\n")
-    outcommfile.write("\\texttitle{" + textitle + "}\n")
+    #outfile.write("\\texttitle{" + textitle + "}\n")
+    #outcommfile.write("\\texttitle{" + textitle + "}\n")
     masterfile.write("\\input{" + title + "}\n")
 
     # Go through each "paragraph" and print the 4-line interlinearization for each
