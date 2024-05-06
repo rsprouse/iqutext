@@ -79,8 +79,13 @@ def killspace(line) :
 def toSmallCaps(word):
     newword = ''
     incaps = False          # Are we in a \textsc{} environment already?
-    for char in word:
-        if char in 'ABCDEFGHIJKLMNOPQRSTUVWXYZ':
+    for idx, char in enumerate(word):
+        try:
+            # Don't convert first letter of capitalized words to small caps, e.g. Iquitos
+            canlower = not word[idx+1] in 'abcdefghijklmnopqrstuvwxyz'
+        except IndexError:
+            canlower = True
+        if canlower and char in 'ABCDEFGHIJKLMNOPQRSTUVWXYZ':
             if not incaps:
                 newword += r'\D{'
                 incaps = True
