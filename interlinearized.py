@@ -395,6 +395,7 @@ for text in root.findall('interlinear-text'):
                 outfile.write(hash_escape(gls))
             outfile.write(r'\\' + "\n")
         outfile.write("\\glt " + hash_escape(enclose_single(translation)) + "\n")
+        outfile.write("\\glts " + hash_escape(enclose_single(sptranslation)) + "\n")
         outfile.write("\\glend\n\\end{exe}\n\n")
 
         # Community texts
