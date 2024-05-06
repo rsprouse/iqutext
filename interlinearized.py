@@ -146,7 +146,7 @@ def replace_spellings(w):
     Do spelling replacements.
     '''
     w = re.sub(rf'(k|K)w([{vchars}])', r'\1\ʷ\2', w)
-    w = re.sub(r'[nN](ì|Ì|í|Í|i|I)(à|À|á|Á|a|A)', r'ɲ\1\2', w)
+    w = re.sub(r'[nN](ì|Ì|í|Í|i|I)(à|À|á|Á|a|A)', r'ɲ\2', w)
 
     # These must be ordered.
     w = re.sub(r'[sS]([ìÌíÍiI])([àÀáÁaAùÙúÚuU])', r'ʃ\1\2', w)
