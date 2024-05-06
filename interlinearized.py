@@ -377,10 +377,7 @@ for text in root.findall('interlinear-text'):
                         if sptranslation == None: sptranslation = ""
                         break
 
-        label = title.replace('_', '')       # This may end up being something different
-
         outfile.write("\\begin{exe}\n")
-        outfile.write("\\label{ex:" + label + "} \\ex\n")
         if fourline:
             outfile.write("\\glll \n")
         outfile.write(hash_escape(fullline) + r"\\" + "\n")
@@ -402,7 +399,6 @@ for text in root.findall('interlinear-text'):
 
         # Community texts
         outcommfile.write("\\begin{exe}\n")
-        outcommfile.write("\\label{ex:" + label + "} \\ex\n")
         outcommfile.write("\\iqu{" + hash_escape(commfullline) + r"}\\" + "\n")
 #        for cf in linecfs:
 #            outcommfile.write(hash_escape(cf))
