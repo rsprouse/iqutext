@@ -383,6 +383,7 @@ for text in root.findall('interlinear-text'):
                         break
 
         outfile.write("\\begin{exe}\n")
+        outfile.write("\\ex\n")
         if fourline:
             outfile.write("\\glll \n")
         outfile.write(hash_escape(fullline) + r"\\" + "\n")
@@ -405,6 +406,7 @@ for text in root.findall('interlinear-text'):
 
         # Community texts
         outcommfile.write("\\begin{exe}\n")
+        outcommfile.write("\\ex\n")
         outcommfile.write("\\iqu{" + hash_escape(commfullline) + r"}\\" + "\n")
 #        for cf in linecfs:
 #            outcommfile.write(hash_escape(cf))
