@@ -150,7 +150,7 @@ def replace_spellings(w):
     '''
     Do spelling replacements.
     '''
-    w = re.sub(rf'(k|K)w([{vchars}])', r'\1\ʷ\2', w)
+    w = re.sub(rf'(k|K)w([{vchars}])', r'\1ʷ\2', w)
     w = re.sub(r'[nN](ì|Ì|í|Í|i|I)(à|À|á|Á|a|A)', r'ɲ\2', w)
 
     # These must be ordered.
@@ -158,7 +158,7 @@ def replace_spellings(w):
     w = re.sub(r'[sS]([ìÌíÍiI])', r'ʃ\1', w)
     w = w.translate(str.maketrans({'j': 'h', 'J': 'H'}))
     w = w.translate(str.maketrans({'y': 'j', 'Y': 'J'}))
-    w = re.sub(rf'([{cchars}])i([{vchars_not_i}])', r'\1\ʲ\2', w)
+    w = re.sub(rf'([{cchars}])i([{vchars_not_i}])', r'\1ʲ\2', w)
     return w
 
 # ~~~~~~~~~~~~~~
