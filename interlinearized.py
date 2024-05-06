@@ -129,15 +129,15 @@ def replace_nums(w):
     Replace numerals with latex replacements.
     '''
     mapdict = {
-        '0': r'\super{HL}$\varnothing$',
-        '1': r'$\varnothing$',
-        '2': r'\super{HLL}$\varnothing$',
-        '3': r'\super{H}$\varnothing$\super{LL}',
-        '4': r'\super{H}$\varnothing$\super{LL}',
-        '5': r'$\varnothing$',
-        '6': r'\super{H}$\varnothing$\super{LL}',
-        '7': r'$\varnothing$',
-        '8': r'\super{H}$\varnothing$\super{LL}'
+        '0': r'\super{HL}Ø',
+        '1': r'Ø',
+        '2': r'\super{HLL}Ø',
+        '3': r'\super{H}Ø\super{LL}',
+        '4': r'\super{H}Ø\super{LL}',
+        '5': r'Ø',
+        '6': r'\super{H}Ø\super{LL}',
+        '7': r'Ø',
+        '8': r'\super{H}Ø\super{LL}'
     }
     return w.translate(str.maketrans(mapdict))
 
@@ -145,7 +145,7 @@ def replace_spellings(w):
     '''
     Do spelling replacements.
     '''
-    w = re.sub(rf'(k|K)w([{vchars}])', r'\1\\super{w}\2', w)
+    w = re.sub(rf'(k|K)w([{vchars}])', r'\1\ʷ\2', w)
     w = re.sub(r'[nN](ì|Ì|í|Í|i|I)(à|À|á|Á|a|A)', r'ɲ\1\2', w)
 
     # These must be ordered.
@@ -153,7 +153,7 @@ def replace_spellings(w):
     w = re.sub(r'[sS]([ìÌíÍiI])', r'ʃ\1', w)
     w = w.translate(str.maketrans({'j': 'h', 'J': 'H'}))
     w = w.translate(str.maketrans({'y': 'j', 'Y': 'J'}))
-    w = re.sub(rf'([{cchars}])i([{vchars_not_i}])', r'\1\\super{j}\2', w)
+    w = re.sub(rf'([{cchars}])i([{vchars_not_i}])', r'\1\ʲ\2', w)
     return w
 
 # ~~~~~~~~~~~~~~
