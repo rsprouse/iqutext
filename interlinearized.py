@@ -270,7 +270,10 @@ for text in root.findall('interlinear-text'):
         linecfs = []        # contains all cfs in a given paragraph/line
         lineglosses = []    # contains all glosses in a given paragraph/line
         translation = ''    # English free translation for each line
-        sptranslation = ''    # Spanish free translation for each line
+        sptranslation = ''    # Spanish (local variety) free translation for each line
+        spntranslation = ''    # Spanish (standard variety) free translation for each line
+        spnfnote = ''    # Spanish (standard variety) footnote for each line
+        engfnote = ''    # English footnote for each line
 
 #       This is how it used to work. Then FLEx started putting 'word' under each 'phrases' XML tag for some reason.
 #        phrases = paragraph.iter('phrase')
@@ -324,7 +327,7 @@ for text in root.findall('interlinear-text'):
             for punc in leftsidepunc:
                 fullline = fullline.replace(punc + " ", " " + punc)
                 commfullline = commfullline.replace(punc + " ", " " + punc)
-            nospacepunc = ["-", "\xe2\x80\x94", "\xe2\x80\x93"]
+            nospacepunc = ["-", "\xe2\x80\x94", "\xe2\x80\x93", "»"]
             for punc in nospacepunc:
                 fullline = fullline.replace(punc + " ", punc)
             # Add space before emdash
@@ -375,12 +378,18 @@ for text in root.findall('interlinear-text'):
                     if item.tag == 'item' and 'type' in item.attrib and item.attrib['type'] == 'gls' and item.attrib['lang'] == 'en':
                         translation = item.text
                         if translation == None: translation = ""
-                        break
-                for item in phrase:
                     if item.tag == 'item' and 'type' in item.attrib and item.attrib['type'] == 'gls' and item.attrib['lang'] == 'es':
                         sptranslation = item.text
                         if sptranslation == None: sptranslation = ""
-                        break
+                    if item.tag == 'item' and 'type' in item.attrib and item.attrib['type'] == 'gls' and item.attrib['lang'] == 'eu':
+                        spntranslation = item.text
+                        if spntranslation == None: spntranslation = ""
+                    if item.tag == 'item' and 'type' in item.attrib and item.attrib['type'] == 'gls' and item.attrib['lang'] == 'fr':
+                        spnfnote = item.text
+                        if spnfnote == None: spnfnote = ""
+                    if item.tag == 'item' and 'type' in item.attrib and item.attrib['type'] == 'gls' and item.attrib['lang'] == 'ga':
+                        engfnote = item.text
+                        if engfnote == None: engfnote = ""
 
         outfile.write("\\begin{exe}\n")
         outfile.write("\\ex\n")
@@ -400,8 +409,11 @@ for text in root.findall('interlinear-text'):
                 #outfile.write(gls+" ")
                 outfile.write(hash_escape(gls))
             outfile.write(r'\\' + "\n")
-        outfile.write("\\glt " + hash_escape(enclose_single(translation)) + "\n")
         outfile.write("\\glts " + hash_escape(enclose_single(sptranslation)) + "\n")
+        outfile.write("\\gltc " + hash_escape(enclose_single(spntranslation)) + "\n")
+        outfile.write("\\gltcfn " + hash_escape(enclose_single(spnfnote)) + "\n")
+        outfile.write("\\glt " + hash_escape(enclose_single(translation)) + "\n")
+        outfile.write("\\gltfn " + hash_escape(enclose_single(engfnote)) + "\n")
         outfile.write("\\glend\n\\end{exe}\n\n")
 
         # Community texts
