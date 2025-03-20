@@ -387,7 +387,7 @@ for text in root.findall('interlinear-text'):
                     if item.tag == 'item' and 'type' in item.attrib and item.attrib['type'] == 'gls' and item.attrib['lang'] == 'fr':
                         spnfnote = item.text
                         if spnfnote == None: spnfnote = ""
-                    if item.tag == 'item' and 'type' in item.attrib and item.attrib['type'] == 'gls' and item.attrib['lang'] == 'ga':
+                    if item.tag == 'item' and 'type' in item.attrib and item.attrib['type'] == 'gls' and item.attrib['lang'] == 'de':
                         engfnote = item.text
                         if engfnote == None: engfnote = ""
 
