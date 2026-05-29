@@ -270,7 +270,7 @@ for text in root.findall('interlinear-text'):
 
     # Go through each "paragraph" and print the 4-line interlinearization for each
 
-    for paragraph in text.iter('paragraph'):
+    for paragraphidx, paragraph in enumerate(text.iter('paragraph')):
 
         fullline = ''       # first line of text
         commfullline = ''   # first line of text, community text output
@@ -328,6 +328,16 @@ for text in root.findall('interlinear-text'):
                             if txt == "\\": txt = ''    # Kill weird backslashes
                             fullline += clean_firstline(txt)
                             commfullline += clean_firstline(txt, community=True)
+
+                        if paragraphidx == 0 and item.attrib['type'] == 'gls':
+                            # Special handling of first paragraph
+                            if 'lang' in item.attrib and item.attrib['lang'] == 'en':
+                                translation = item.text
+                            elif 'lang' in item.attrib and item.attrib['lang'] == 'es':
+                                sptranslation = item.text
+                            elif 'lang' in item.attrib and item.attrib['lang'] == 'eu':
+                                spntranslation = item.text
+
 
             # Post-processing:
             # Punctuation that should not behave like other punctuation:
