@@ -419,9 +419,9 @@ for text in root.findall('interlinear-text'):
             outfile.write(r'\\' + "\n")
         outfile.write("\\glts " + hash_escape(enclose_single(sptranslation)) + r"\\" + "\n")
         outfile.write("\\gltc " + hash_escape(enclose_single(spntranslation)) + r"\\" + "\n")
-        outfile.write("\\gltcfn " + hash_escape(enclose_single(spnfnote)) + r"\\" + "\n")
+        outfile.write("\\gltcfn " + hash_escape(spnfnote) + r"\\" + "\n")
         outfile.write("\\glt " + hash_escape(enclose_single(translation) + r"\\") + "\n")
-        outfile.write("\\gltfn " + hash_escape(enclose_single(engfnote)) + r"\\" + "\n")
+        outfile.write("\\gltfn " + hash_escape(engfnote) + r"\\" + "\n")
         outfile.write("\\glend\n\\end{exe}\n\n")
 
         # Community texts
