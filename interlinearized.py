@@ -148,18 +148,26 @@ def replace_nums(w):
 
 def replace_spellings(w):
     '''
-    Do spelling replacements.
+    Do spelling replacements. Portions of strings in « » are not modified.
     '''
-    w = re.sub(rf'(k|K)w([{vchars}])', r'\1ʷ\2', w)
-    w = re.sub(r'[nN](ì|Ì|í|Í|i|I)(à|À|á|Á|a|A)', r'ɲ\2', w)
+    parts = re.split(r'(«[^»]*»)', w)
 
-    # These must be ordered.
-    w = re.sub(r'[sS]([ìÌíÍiI])([àÀáÁaAùÙúÚuU])', r'ʃ\1\2', w)
-    w = re.sub(r'[sS]([ìÌíÍiI])', r'ʃ\1', w)
-    w = w.translate(str.maketrans({'j': 'h', 'J': 'H'}))
-    w = w.translate(str.maketrans({'y': 'j', 'Y': 'J'}))
-    w = re.sub(rf'([{cchars}])i([{vchars_not_i}])', r'\1ʲ\2', w)
-    return w
+    for i in range(len(parts)):
+        # Even indices are outside the brackets (modifiable text)
+        # Odd indices are inside the brackets (protected text)
+        if i % 2 == 0:
+            w = parts[i]
+            w = re.sub(rf'(k|K)w([{vchars}])', r'\1ʷ\2', w)
+            w = re.sub(r'[nN](ì|Ì|í|Í|i|I)(à|À|á|Á|a|A)', r'ɲ\2', w)
+
+            # These must be ordered.
+            w = re.sub(r'[sS]([ìÌíÍiI])([àÀáÁaAùÙúÚuU])', r'ʃ\1\2', w)
+            w = re.sub(r'[sS]([ìÌíÍiI])', r'ʃ\1', w)
+            w = w.translate(str.maketrans({'j': 'h', 'J': 'H'}))
+            w = w.translate(str.maketrans({'y': 'j', 'Y': 'J'}))
+            w = re.sub(rf'([{cchars}])i([{vchars_not_i}])', r'\1ʲ\2', w)
+            parts[i] = w
+    return ''.join(parts)
 
 # ~~~~~~~~~~~~~~
 # Variable setup
