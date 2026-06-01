@@ -409,7 +409,8 @@ for text in root.findall('interlinear-text'):
                         engfnote = item.text
                         if engfnote == None: engfnote = ""
 
-        outfile.write("\\begin{exe}\n")
+        if paragraphidx > 0:
+            outfile.write("\\begin{exe}\n")
         outfile.write("\\ex\n")
         if fourline:
             outfile.write("\\glll \n")
@@ -432,7 +433,10 @@ for text in root.findall('interlinear-text'):
         outfile.write("\\gltcfn " + hash_escape(spnfnote) + r"\\" + "\n")
         outfile.write("\\glt " + hash_escape(enclose_single(translation) + r"\\") + "\n")
         outfile.write("\\gltfn " + hash_escape(engfnote) + r"\\" + "\n")
-        outfile.write("\\glend\n\\end{exe}\n\n")
+        outfile.write("\\glend\n")
+        if paragraphidx > 0:
+            outfile.write("\\end{exe}\n")
+        outfile.write("\n")
 
         # Community texts
         outcommfile.write("\\begin{exe}\n")
