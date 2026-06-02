@@ -310,7 +310,9 @@ for text in root.findall('interlinear-text'):
                             if in_single_quote or in_double_quote:
                                 txt = item.text #.encode('utf-8')
                             else:
-                                txt = " " + item.text #.encode('utf-8')
+                                # Replace regular space with nonbreaking space character ~ within item
+                                nonbreakingtxt = item.text.replace(' ', '~')
+                                txt = " " + nonbreakingtxt
                             fullline += clean_firstline(txt)
                             commfullline += clean_firstline(txt, community=True)
                         if item.attrib['type'] == 'punct':
