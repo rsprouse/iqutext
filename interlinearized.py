@@ -112,6 +112,14 @@ def hash_escape(s):
     '''Escape hash character.'''
     return s.replace('#', r'\#')
 
+def clean_title(textitle):
+    for char in badtitle:
+        try:
+            textitle = textitle.replace(char,'')
+        except:
+            print(f'type(title) {type(title)}')
+    return textitle
+
 def clean_firstline(w, community=False):
     '''
     Process text for first interlinear line.
@@ -227,13 +235,27 @@ for text in root.findall('interlinear-text'):
 
     # Get the title and format it into three different versions
 
+    lang_to_title_type = {
+        'iqu': r'\titi{',
+        'es': r'\tits{',
+        'eu': r'\titc{',
+        'en': r'\tite{',
+    }
+
+    titlesection = ''
+    titleabbr = 'NOT FOUND'
+    author = 'NOT FOUND'
     for titleitem in text.findall('item'):
         if 'type' in titleitem.attrib and titleitem.attrib['type'] == 'title':
-            #rawtitle = titleitem.text.encode('utf-8')
-            rawtitle = titleitem.text
-            # Only break once we've gotten the title in the language we want
+            lang_to_title_type[titleitem.attrib['lang']] += clean_title(titleitem.text) + '}'
+            # Save rawtitle for the title in the language we want
             if 'lang' in titleitem.attrib and titleitem.attrib['lang'] == titlelang:
-                break
+                rawtitle = titleitem.text
+        elif 'type' in titleitem.attrib and titleitem.attrib['type'] == 'title-abbreviation':
+            titleabbr = r'\tita{' + titleitem.text + '}'
+        elif 'type' in titleitem.attrib and titleitem.attrib['type'] == 'source':
+            author = r'\auth{' + titleitem.text + '}'
+
 
     title = rawtitle        # title to use for filenames and \include{}
     for char in illegalchars:
@@ -242,12 +264,6 @@ for text in root.findall('interlinear-text'):
         except:
             print(char)
             print(f'type(char) {type(char)}')
-            print(f'type(title) {type(title)}')
-    textitle = rawtitle     # title to use for heading in LaTeX file
-    for char in badtitle:
-        try:
-            textitle = textitle.replace(char,'')
-        except:
             print(f'type(title) {type(title)}')
     #titleascii = title.decode(encoding)
     titleascii = title
@@ -263,14 +279,22 @@ for text in root.findall('interlinear-text'):
 
     # Open up a new output file for each text
     outfile = open(nextfilepath,'w', encoding=encoding)
+    outfile.write('\n'.join(lang_to_title_type.values()) + '\n')
+    outfile.write(titleabbr + '\n')
+    outfile.write(author + '\n\n')
+
     outcommfile = open(nextcommfilepath,'w', encoding=encoding)
-    #outfile.write("\\texttitle{" + textitle + "}\n")
-    #outcommfile.write("\\texttitle{" + textitle + "}\n")
+    outcommfile.write('\n'.join(lang_to_title_type.values()))
+    outcommfile.write(titleabbr + '\n')
+    outcommfile.write(author + '\n')
+
     masterfile.write("\\input{" + title + "}\n")
 
     # Go through each "paragraph" and print the 4-line interlinearization for each
 
     for paragraphidx, paragraph in enumerate(text.iter('paragraph')):
+        if paragraphidx == 0:
+            continue
 
         fullline = ''       # first line of text
         commfullline = ''   # first line of text, community text output
