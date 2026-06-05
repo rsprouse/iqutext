@@ -406,7 +406,7 @@ for text in root.findall('interlinear-text'):
                         if spntranslation == None: spntranslation = ""
                     if item.tag == 'item' and 'type' in item.attrib and item.attrib['type'] == 'gls' and item.attrib['lang'] == 'fr':
                         spnfnote = item.text
-                        if spnfnote == None: spnfnote = "{}"
+                        if spnfnote == None: spnfnote = ""
                     if item.tag == 'item' and 'type' in item.attrib and item.attrib['type'] == 'gls' and item.attrib['lang'] == 'de':
                         engfnote = item.text
                         if engfnote == None: engfnote = ""
@@ -430,11 +430,16 @@ for text in root.findall('interlinear-text'):
                 #outfile.write(gls+" ")
                 outfile.write(hash_escape(gls))
             outfile.write(r'\\' + "\n")
-        outfile.write("\\glts " + hash_escape(enclose_single(sptranslation)) + r"\\" + "\n")
-        outfile.write("\\gltc " + hash_escape(enclose_single(spntranslation)) + r"\\" + "\n")
-        outfile.write("\\gltcfn " + hash_escape(spnfnote) + r"\\" + "\n")
-        outfile.write("\\glt " + hash_escape(enclose_single(translation) + r"\\") + "\n")
-        outfile.write("\\gltfn " + hash_escape(engfnote) + r"\\" + "\n")
+        if sptranslation != '':
+            outfile.write("\\glts{" + hash_escape(enclose_single(sptranslation)) + r"}\\" + "\n")
+        if spntranslation != '':
+            outfile.write("\\gltc{" + hash_escape(enclose_single(spntranslation)) + r"}\\" + "\n")
+        if spnfnote != '':
+            outfile.write("\\gltcfn{" + hash_escape(spnfnote) + r"}\\" + "\n")
+        if translation != '':
+            outfile.write("\\glt{" + hash_escape(enclose_single(translation) + r"}\\") + "\n")
+        if engfnote != '':
+            outfile.write("\\gltfn{" + hash_escape(engfnote) + r"}\\" + "\n")
         outfile.write("\\glend\n")
         if paragraphidx > 0:
             outfile.write("\\end{exe}\n")
