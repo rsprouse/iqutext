@@ -253,7 +253,7 @@ for text in root.findall('interlinear-text'):
                 rawtitle = titleitem.text
         elif 'type' in titleitem.attrib and titleitem.attrib['type'] == 'title-abbreviation':
             titleabbr = titleitem.text
-        elif 'type' in titleitem.attrib and titleitem.attrib['type'] == 'source':
+        elif 'type' in titleitem.attrib and titleitem.attrib['type'] == 'source' and  'lang' in titleitem.attrib and titleitem.attrib['lang'] == 'eu':
             author = r'\auth{' + titleitem.text + '}'
     lang_to_title_type['iqu'] += f' ({titleabbr})'   # append to \titi line
 
