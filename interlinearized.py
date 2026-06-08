@@ -247,14 +247,15 @@ for text in root.findall('interlinear-text'):
     author = 'NOT FOUND'
     for titleitem in text.findall('item'):
         if 'type' in titleitem.attrib and titleitem.attrib['type'] == 'title':
-            lang_to_title_type[titleitem.attrib['lang']] += clean_title(titleitem.text) + '}'
+            lang_to_title_type[titleitem.attrib['lang']] += clean_title(titleitem.text)
             # Save rawtitle for the title in the language we want
             if 'lang' in titleitem.attrib and titleitem.attrib['lang'] == titlelang:
                 rawtitle = titleitem.text
         elif 'type' in titleitem.attrib and titleitem.attrib['type'] == 'title-abbreviation':
-            titleabbr = r'\tita{' + titleitem.text + '}'
+            titleabbr = titleitem.text
         elif 'type' in titleitem.attrib and titleitem.attrib['type'] == 'source':
             author = r'\auth{' + titleitem.text + '}'
+    lang_to_title_type['iqu'] += f' ({titleabbr})'   # append to \titi line
 
 
     title = rawtitle        # title to use for filenames and \include{}
@@ -279,8 +280,7 @@ for text in root.findall('interlinear-text'):
 
     # Open up a new output file for each text
     outfile = open(nextfilepath,'w', encoding=encoding)
-    outfile.write('\n'.join(lang_to_title_type.values()) + '\n')
-    outfile.write(titleabbr + '\n')
+    outfile.write('}\n'.join(lang_to_title_type.values()) + '}\n')
     outfile.write(author + '\n\n')
 
     outcommfile = open(nextcommfilepath,'w', encoding=encoding)
