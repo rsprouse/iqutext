@@ -247,7 +247,10 @@ for text in root.findall('interlinear-text'):
     author = 'NOT FOUND'
     for titleitem in text.findall('item'):
         if 'type' in titleitem.attrib and titleitem.attrib['type'] == 'title':
-            lang_to_title_type[titleitem.attrib['lang']] += clean_title(titleitem.text)
+            titext = clean_title(titleitem.text)
+            if titleitem.attrib['lang'] == 'iqu':   # process \titi value
+                titext = clean_firstline(titext)
+            lang_to_title_type[titleitem.attrib['lang']] += titext
             # Save rawtitle for the title in the language we want
             if 'lang' in titleitem.attrib and titleitem.attrib['lang'] == titlelang:
                 rawtitle = titleitem.text
@@ -281,12 +284,13 @@ for text in root.findall('interlinear-text'):
     # Open up a new output file for each text
     outfile = open(nextfilepath,'w', encoding=encoding)
     outfile.write('}\n'.join(lang_to_title_type.values()) + '}\n')
-    outfile.write(author + '\n\n')
+    outfile.write(author + '\n')
+    outfile.write(r'\input{intro-' + titleabbr + '.tex}\n\n')
 
     outcommfile = open(nextcommfilepath,'w', encoding=encoding)
-    outcommfile.write('\n'.join(lang_to_title_type.values()))
-    outcommfile.write(titleabbr + '\n')
+    outcommfile.write('}\n'.join(lang_to_title_type.values()) + '}\n')
     outcommfile.write(author + '\n')
+    outcommfile.write(r'\input{intro-' + titleabbr + '.tex}\n\n')
 
     masterfile.write("\\input{" + title + "}\n")
 
