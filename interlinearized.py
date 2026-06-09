@@ -250,7 +250,10 @@ for text in root.findall('interlinear-text'):
             titext = clean_title(titleitem.text)
             if titleitem.attrib['lang'] == 'iqu':   # process \titi value
                 titext = clean_firstline(titext)
-            lang_to_title_type[titleitem.attrib['lang']] += titext
+            try:
+                lang_to_title_type[titleitem.attrib['lang']] += titext
+            except KeyError:  # skip extra <item type="title" lang="XX"> elements
+                continue
             # Save rawtitle for the title in the language we want
             if 'lang' in titleitem.attrib and titleitem.attrib['lang'] == titlelang:
                 rawtitle = titleitem.text
