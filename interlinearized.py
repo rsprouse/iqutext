@@ -230,269 +230,265 @@ root = tree.getroot()
 # ~~~~~~~~~~~~~~~~~~~~
 # Go through each text
 # ~~~~~~~~~~~~~~~~~~~~
+for glosslang in ('en', 'es'):
+    for text in root.findall('interlinear-text'):
+        # Get the title and format it into three different versions
+        lang_to_title_type = {
+            'iqu': r'\titi{',
+            'es': r'\tits{',
+            'eu': r'\titc{',
+            'en': r'\tite{',
+        }
 
-for text in root.findall('interlinear-text'):
+        titlesection = ''
+        titleabbr = 'NOT FOUND'
+        author = 'NOT FOUND'
+        for titleitem in text.findall('item'):
+            if 'type' in titleitem.attrib and titleitem.attrib['type'] == 'title':
+                titext = clean_title(titleitem.text)
+                if titleitem.attrib['lang'] == 'iqu':   # process \titi value
+                    titext = clean_firstline(titext)
+                try:
+                    lang_to_title_type[titleitem.attrib['lang']] += titext
+                except KeyError:  # skip extra <item type="title" lang="XX"> elements
+                    continue
+                # Save rawtitle for the title in the language we want
+                if 'lang' in titleitem.attrib and titleitem.attrib['lang'] == titlelang:
+                    rawtitle = titleitem.text
+            elif 'type' in titleitem.attrib and titleitem.attrib['type'] == 'title-abbreviation':
+                titleabbr = titleitem.text
+            elif 'type' in titleitem.attrib and titleitem.attrib['type'] == 'source' and  'lang' in titleitem.attrib and titleitem.attrib['lang'] == 'eu':
+                author = r'\auth{' + titleitem.text + '}'
+        lang_to_title_type['iqu'] += f' ({titleabbr})'   # append to \titi line
 
-    # Get the title and format it into three different versions
-
-    lang_to_title_type = {
-        'iqu': r'\titi{',
-        'es': r'\tits{',
-        'eu': r'\titc{',
-        'en': r'\tite{',
-    }
-
-    titlesection = ''
-    titleabbr = 'NOT FOUND'
-    author = 'NOT FOUND'
-    for titleitem in text.findall('item'):
-        if 'type' in titleitem.attrib and titleitem.attrib['type'] == 'title':
-            titext = clean_title(titleitem.text)
-            if titleitem.attrib['lang'] == 'iqu':   # process \titi value
-                titext = clean_firstline(titext)
+        title = rawtitle        # title to use for filenames and \include{}
+        for char in illegalchars:
             try:
-                lang_to_title_type[titleitem.attrib['lang']] += titext
-            except KeyError:  # skip extra <item type="title" lang="XX"> elements
-                continue
-            # Save rawtitle for the title in the language we want
-            if 'lang' in titleitem.attrib and titleitem.attrib['lang'] == titlelang:
-                rawtitle = titleitem.text
-        elif 'type' in titleitem.attrib and titleitem.attrib['type'] == 'title-abbreviation':
-            titleabbr = titleitem.text
-        elif 'type' in titleitem.attrib and titleitem.attrib['type'] == 'source' and  'lang' in titleitem.attrib and titleitem.attrib['lang'] == 'eu':
-            author = r'\auth{' + titleitem.text + '}'
-    lang_to_title_type['iqu'] += f' ({titleabbr})'   # append to \titi line
+                title = title.replace(char,"_")
+            except:
+                print(char)
+                print(f'type(char) {type(char)}')
+                print(f'type(title) {type(title)}')
+        #titleascii = title.decode(encoding)
+        titleascii = title
 
-
-    title = rawtitle        # title to use for filenames and \include{}
-    for char in illegalchars:
-        try:
-            title = title.replace(char,"_")
-        except:
-            print(char)
-            print(f'type(char) {type(char)}')
-            print(f'type(title) {type(title)}')
-    #titleascii = title.decode(encoding)
-    titleascii = title
-
-    nextfilepath = os.path.join(newpath, titleascii + ".tex")
-    while os.path.exists(nextfilepath):
-        titleascii = title + "2"     # There's a better way to do this
-        nextfilepath = os.path.join(newpath, titleascii + ".tex")
-    nextcommfilepath = os.path.join(newcommpath, titleascii + ".tex")
-    while os.path.exists(nextcommfilepath):
-        titleascii = title + "2"     # There's a better way to do this
+        fname = f'{titleabbr}-{glosslang}-glossed.tex'
+        nextfilepath = os.path.join(newpath, fname)
+        while os.path.exists(nextfilepath):
+            nextfilepath = os.path.join(newpath, fname + '2')     # There's a better way to do this
         nextcommfilepath = os.path.join(newcommpath, titleascii + ".tex")
+        while os.path.exists(nextcommfilepath):
+            nextcommfilepath = os.path.join(newcommpath, fname + '2')     # There's a better way to do this
 
-    # Open up a new output file for each text
-    outfile = open(nextfilepath,'w', encoding=encoding)
-    outfile.write('}\n'.join(lang_to_title_type.values()) + '}\n')
-    outfile.write(author + '\n')
-    outfile.write(r'\input{intro-' + titleabbr + '.tex}\n\n')
+        # Open up a new output file for each text
+        outfile = open(nextfilepath,'w', encoding=encoding)
+        outfile.write('}\n'.join(lang_to_title_type.values()) + '}\n')
+        outfile.write(author + '\n')
+        outfile.write(r'\input{intro-' + titleabbr + '.tex}\n\n')
 
-    outcommfile = open(nextcommfilepath,'w', encoding=encoding)
-    outcommfile.write('}\n'.join(lang_to_title_type.values()) + '}\n')
-    outcommfile.write(author + '\n')
-    outcommfile.write(r'\input{intro-' + titleabbr + '.tex}\n\n')
+        outcommfile = open(nextcommfilepath,'w', encoding=encoding)
+        outcommfile.write('}\n'.join(lang_to_title_type.values()) + '}\n')
+        outcommfile.write(author + '\n')
+        outcommfile.write(r'\input{intro-' + titleabbr + '.tex}\n\n')
 
-    masterfile.write("\\input{" + title + "}\n")
+        masterfile.write("\\input{" + fname + "}\n")
 
-    # Go through each "paragraph" and print the 4-line interlinearization for each
+        # Go through each "paragraph" and print the 4-line interlinearization for each
 
-    for paragraphidx, paragraph in enumerate(text.iter('paragraph')):
-        if paragraphidx == 0:
-            continue
+        for paragraphidx, paragraph in enumerate(text.iter('paragraph')):
+            if paragraphidx == 0:
+                continue
 
-        fullline = ''       # first line of text
-        commfullline = ''   # first line of text, community text output
-        linemorphs = []     # contains all morphemes in a given paragraph/line
-        linecfs = []        # contains all cfs in a given paragraph/line
-        lineglosses = []    # contains all glosses in a given paragraph/line
-        translation = ''    # English free translation for each line
-        sptranslation = ''    # Spanish (local variety) free translation for each line
-        spntranslation = ''    # Spanish (standard variety) free translation for each line
-        spnfnote = ''    # Spanish (standard variety) footnote for each line
-        engfnote = ''    # English footnote for each line
+            fullline = ''       # first line of text
+            commfullline = ''   # first line of text, community text output
+            linemorphs = []     # contains all morphemes in a given paragraph/line
+            linecfs = []        # contains all cfs in a given paragraph/line
+            lineglosses = []    # contains all glosses in a given paragraph/line
+            translation = ''    # English free translation for each line
+            sptranslation = ''    # Spanish (local variety) free translation for each line
+            spntranslation = ''    # Spanish (standard variety) free translation for each line
+            spnfnote = ''    # Spanish (standard variety) footnote for each line
+            engfnote = ''    # English footnote for each line
 
-#       This is how it used to work. Then FLEx started putting 'word' under each 'phrases' XML tag for some reason.
-#        phrases = paragraph.iter('phrase')
-        
-#       This is how it works now. Goes into <phrases> and then finds all the <word> tags (which used to be <phrase>) immediately under that.
-        phrasesblock = paragraph.find('phrases')
-        if not phrasesblock == None:
-            phrases = phrasesblock.findall('word') + phrasesblock.findall('phrase')
+    #       This is how it used to work. Then FLEx started putting 'word' under each 'phrases' XML tag for some reason.
+    #        phrases = paragraph.iter('phrase')
 
-        for phrase in phrases:
+    #       This is how it works now. Goes into <phrases> and then finds all the <word> tags (which used to be <phrase>) immediately under that.
+            phrasesblock = paragraph.find('phrases')
+            if not phrasesblock == None:
+                phrases = phrasesblock.findall('word') + phrasesblock.findall('phrase')
 
-            # String together all the words for the first line
+            for phrase in phrases:
 
-            words = phrase.iter('word')
+                # String together all the words for the first line
 
-            in_single_quote = False
-            in_double_quote = False
-            for widx, word in enumerate(words):
-                for item in word:
-                    if item.tag == "item" and 'type' in item.attrib:
+                words = phrase.iter('word')
 
-                        # Encode the word to add to the string.
-                        # Add a leading space if it's not punctuation.
+                in_single_quote = False
+                in_double_quote = False
+                for widx, word in enumerate(words):
+                    for item in word:
+                        if item.tag == "item" and 'type' in item.attrib:
 
-                        if item.attrib['type'] == 'txt' or item.attrib['type'] == 'cf':
-                            if in_single_quote or in_double_quote:
-                                txt = item.text #.encode('utf-8')
-                            else:
-                                # Replace regular space with nonbreaking space character ~ within item
-                                nonbreakingtxt = item.text.replace(' ', '~')
-                                txt = " " + nonbreakingtxt
-                            fullline += clean_firstline(txt)
-                            commfullline += clean_firstline(txt, community=True)
-                        if item.attrib['type'] == 'punct':
-                            if item.text in ("'", '"'):
-                                txt = f' {item.text}'
-                                if item.text == "'":
-                                    in_single_quote = not in_single_quote
-                                if item.text == '"':
-                                    in_double_quote = not in_double_quote
-                            else:
-                                txt = item.text or '' #.encode('utf-8')
-                            if item.text is None:
-                                sys.stderr.write('Empty punctuation found\n')
-                                ET.dump(item)
-                            if txt == "\\": txt = ''    # Kill weird backslashes
-                            fullline += clean_firstline(txt)
-                            commfullline += clean_firstline(txt, community=True)
+                            # Encode the word to add to the string.
+                            # Add a leading space if it's not punctuation.
 
-                        if paragraphidx == 0 and item.attrib['type'] == 'gls':
-                            # Special handling of first paragraph
-                            if 'lang' in item.attrib and item.attrib['lang'] == 'en':
-                                translation = item.text
-                            elif 'lang' in item.attrib and item.attrib['lang'] == 'es':
-                                sptranslation = item.text
-                            elif 'lang' in item.attrib and item.attrib['lang'] == 'eu':
-                                spntranslation = item.text
+                            if item.attrib['type'] == 'txt' or item.attrib['type'] == 'cf':
+                                if in_single_quote or in_double_quote:
+                                    txt = item.text #.encode('utf-8')
+                                else:
+                                    # Replace regular space with nonbreaking space character ~ within item
+                                    nonbreakingtxt = item.text.replace(' ', '~')
+                                    txt = " " + nonbreakingtxt
+                                fullline += clean_firstline(txt)
+                                commfullline += clean_firstline(txt, community=True)
+                            if item.attrib['type'] == 'punct':
+                                if item.text in ("'", '"'):
+                                    txt = f' {item.text}'
+                                    if item.text == "'":
+                                        in_single_quote = not in_single_quote
+                                    if item.text == '"':
+                                        in_double_quote = not in_double_quote
+                                else:
+                                    txt = item.text or '' #.encode('utf-8')
+                                if item.text is None:
+                                    sys.stderr.write('Empty punctuation found\n')
+                                    ET.dump(item)
+                                if txt == "\\": txt = ''    # Kill weird backslashes
+                                fullline += clean_firstline(txt)
+                                commfullline += clean_firstline(txt, community=True)
+
+                            if paragraphidx == 0 and item.attrib['type'] == 'gls':
+                                # Special handling of first paragraph
+                                if 'lang' in item.attrib and item.attrib['lang'] == 'en':
+                                    translation = item.text
+                                elif 'lang' in item.attrib and item.attrib['lang'] == 'es':
+                                    sptranslation = item.text
+                                elif 'lang' in item.attrib and item.attrib['lang'] == 'eu':
+                                    spntranslation = item.text
 
 
-            # Post-processing:
-            # Punctuation that should not behave like other punctuation:
-            leftsidepunc = ["“", "``", "`", "«", "\xe2\x80\x98", "(", "[", "{", "\xe2\x80\x9c"]
-            for punc in leftsidepunc:
-                fullline = fullline.replace(punc + " ", " " + punc)
-                commfullline = commfullline.replace(punc + " ", " " + punc)
-            nospacepunc = ["-", "\xe2\x80\x94", "\xe2\x80\x93", "»"]
-            for punc in nospacepunc:
-                fullline = fullline.replace(punc + " ", punc)
-            # Add space before emdash
-            commfullline = commfullline.replace('—', ' —')
-            # Remove leading space (necessary?)
-            if fullline[0] == ' ': fullline = fullline[1:]
-            fullline = replace_spellings(fullline)
-            if commfullline[0] == ' ': commfullline = commfullline[1:]
+                # Post-processing:
+                # Punctuation that should not behave like other punctuation:
+                leftsidepunc = ["“", "``", "`", "«", "\xe2\x80\x98", "(", "[", "{", "\xe2\x80\x9c"]
+                for punc in leftsidepunc:
+                    fullline = fullline.replace(punc + " ", " " + punc)
+                    commfullline = commfullline.replace(punc + " ", " " + punc)
+                nospacepunc = ["-", "\xe2\x80\x94", "\xe2\x80\x93", "»"]
+                for punc in nospacepunc:
+                    fullline = fullline.replace(punc + " ", punc)
+                # Add space before emdash
+                commfullline = commfullline.replace('—', ' —')
+                # Remove leading space (necessary?)
+                if fullline[0] == ' ': fullline = fullline[1:]
+                fullline = replace_spellings(fullline)
+                if commfullline[0] == ' ': commfullline = commfullline[1:]
 
-            # Go through morphemes for second and third lines
+                # Go through morphemes for second and third lines
 
-            for morphword in paragraph.iter('morphemes'):
-                for morpheme in morphword.iter('morph'):
-                    txt = ""    # text for each morpheme
-                    cf = ""     # cf for each morpheme
-                    gls = ""    # gloss for each morpheme
-                    for item in morpheme.iter('item'):
-                        if 'type' in item.attrib:
-                            if item.attrib['type'] == 'txt':
-                                txt = killspace(item.text) #.encode("utf-8")
-                                # TODO: escape badtex chars here, e.g. #
-                            if item.attrib['type'] == 'cf':
-                                cf = killspace(item.text) #.encode("utf-8")
-                                cf = replace_tones(cf)
-                                cf = replace_spellings(cf)
-                                cf = replace_nums(cf)
-                            if item.attrib['type'] == 'gls':
-                                gls = killspace(item.text) #.encode("utf-8")
-                                gls = toSmallCaps(gls)
-    
-                    # Add a hyphen to the beginning or end of a gloss morpheme if the corresponding text has it.
-                    if len(txt) and len(gls):
-                        if txt[0] == '-' and gls[0] != '-':
-                            gls = '-' + gls
-                        if txt[-1] == '-' and gls[-1] != '-':
-                            gls = gls + '-'
-    
-                    linemorphs.append(txt)
-                    linecfs.append(cf)
-                    lineglosses.append(gls)
-                linemorphs.append(' ')
-                linecfs.append(' ')
-                lineglosses.append(' ')
+                for morphword in paragraph.iter('morphemes'):
+                    for morpheme in morphword.iter('morph'):
+                        txt = ""    # text for each morpheme
+                        cf = ""     # cf for each morpheme
+                        gls = ""    # gloss for each morpheme
+                        for item in morpheme.iter('item'):
+                            if 'type' in item.attrib:
+                                if item.attrib['type'] == 'txt':
+                                    txt = killspace(item.text) #.encode("utf-8")
+                                    # TODO: escape badtex chars here, e.g. #
+                                if item.attrib['type'] == 'cf':
+                                    cf = killspace(item.text) #.encode("utf-8")
+                                    cf = replace_tones(cf)
+                                    cf = replace_spellings(cf)
+                                    cf = replace_nums(cf)
+                                if item.attrib['type'] == 'gls':
+                                    gls = killspace(item.text) #.encode("utf-8")
+                                    gls = toSmallCaps(gls)
 
-                # Get free translation (held within <phrase>) for the last line
+                        # Add a hyphen to the beginning or end of a gloss morpheme if the corresponding text has it.
+                        if len(txt) and len(gls):
+                            if txt[0] == '-' and gls[0] != '-':
+                                gls = '-' + gls
+                            if txt[-1] == '-' and gls[-1] != '-':
+                                gls = gls + '-'
 
-                for item in phrase:
-                    if item.tag == 'item' and 'type' in item.attrib and item.attrib['type'] == 'gls' and item.attrib['lang'] == 'en':
-                        translation = item.text
-                        if translation == None: translation = ""
-                    if item.tag == 'item' and 'type' in item.attrib and item.attrib['type'] == 'gls' and item.attrib['lang'] == 'es':
-                        sptranslation = item.text
-                        if sptranslation == None: sptranslation = ""
-                    if item.tag == 'item' and 'type' in item.attrib and item.attrib['type'] == 'gls' and item.attrib['lang'] == 'eu':
-                        spntranslation = item.text
-                        if spntranslation == None: spntranslation = ""
-                    if item.tag == 'item' and 'type' in item.attrib and item.attrib['type'] == 'gls' and item.attrib['lang'] == 'fr':
-                        spnfnote = item.text
-                        if spnfnote == None: spnfnote = ""
-                    if item.tag == 'item' and 'type' in item.attrib and item.attrib['type'] == 'gls' and item.attrib['lang'] == 'de':
-                        engfnote = item.text
-                        if engfnote == None: engfnote = ""
+                        linemorphs.append(txt)
+                        linecfs.append(cf)
+                        lineglosses.append(gls)
+                    linemorphs.append(' ')
+                    linecfs.append(' ')
+                    lineglosses.append(' ')
 
-        if paragraphidx > 0:
-            outfile.write("\\begin{exe}\n")
-        outfile.write("\\ex\n")
-        if fourline:
-            outfile.write("\\glll \n")
-        outfile.write(hash_escape(fullline) + r"\\" + "\n")
-        if fourline:
-#            for morph in linemorphs:
-#                outfile.write(hash_escape(morph))
-#            outfile.write(r'\\' + "\n")
-            for cf in linecfs:
-                outfile.write(hash_escape(cf))
-            outfile.write(r'\\' + "\n")
-            for gls in lineglosses:
-                if gls == '':
-                    gls = "{}"
-                #outfile.write(gls+" ")
-                outfile.write(hash_escape(gls))
-            outfile.write(r'\\' + "\n")
-        if sptranslation != '':
-            outfile.write("\\glts{" + hash_escape(enclose_single(sptranslation)) + r"}\\" + "\n")
-        if spntranslation != '':
-            outfile.write("\\gltc{" + hash_escape(enclose_single(spntranslation)) + r"}\\" + "\n")
-        if spnfnote != '':
-            outfile.write("\\gltcfn{" + hash_escape(spnfnote) + r"}\\" + "\n")
-        if translation != '':
-            outfile.write("\\glt{" + hash_escape(enclose_single(translation) + r"}\\") + "\n")
-        if engfnote != '':
-            outfile.write("\\gltfn{" + hash_escape(engfnote) + r"}\\" + "\n")
-        outfile.write("\\glend\n")
-        if paragraphidx > 0:
-            outfile.write("\\end{exe}\n")
-        outfile.write("\n")
+                    # Get free translation (held within <phrase>) for the last line
 
-        # Community texts
-        outcommfile.write("\\begin{exe}\n")
-        outcommfile.write("\\ex\n")
-        outcommfile.write("\\iqu{" + hash_escape(commfullline) + r"}\\" + "\n")
-#        for cf in linecfs:
-#            outcommfile.write(hash_escape(cf))
-#        outcommfile.write(r'\\' + "\n")
-#        for gls in lineglosses:
-#            if gls == '':
-#                gls = "{}"
-#            #outcommfile.write(gls+" ")
-#            outcommfile.write(hash_escape(gls))
-        outcommfile.write("\\spq{" + hash_escape(sptranslation) + r"}\\" + "\n")
-        outcommfile.write("\\eng{" + hash_escape(translation) + "}\n")
-        outcommfile.write("\\end{exe}\n\\vspace{-0.20in}\n")
+                    for item in phrase:
+                        if item.tag == 'item' and 'type' in item.attrib and item.attrib['type'] == 'gls' and item.attrib['lang'] == 'en':
+                            translation = item.text
+                            if translation == None: translation = ""
+                        if item.tag == 'item' and 'type' in item.attrib and item.attrib['type'] == 'gls' and item.attrib['lang'] == 'es':
+                            sptranslation = item.text
+                            if sptranslation == None: sptranslation = ""
+                        if item.tag == 'item' and 'type' in item.attrib and item.attrib['type'] == 'gls' and item.attrib['lang'] == 'eu':
+                            spntranslation = item.text
+                            if spntranslation == None: spntranslation = ""
+                        if item.tag == 'item' and 'type' in item.attrib and item.attrib['type'] == 'gls' and item.attrib['lang'] == 'fr':
+                            spnfnote = item.text
+                            if spnfnote == None: spnfnote = ""
+                        if item.tag == 'item' and 'type' in item.attrib and item.attrib['type'] == 'gls' and item.attrib['lang'] == 'de':
+                            engfnote = item.text
+                            if engfnote == None: engfnote = ""
 
-    outfile.close()
-    outcommfile.close()
+            if paragraphidx > 0:
+                outfile.write("\\begin{exe}\n")
+            outfile.write("\\ex\n")
+            if fourline:
+                outfile.write("\\glll \n")
+            outfile.write(hash_escape(fullline) + r"\\" + "\n")
+            if fourline:
+    #            for morph in linemorphs:
+    #                outfile.write(hash_escape(morph))
+    #            outfile.write(r'\\' + "\n")
+                for cf in linecfs:
+                    outfile.write(hash_escape(cf))
+                outfile.write(r'\\' + "\n")
+                for gls in lineglosses:
+                    if gls == '':
+                        gls = "{}"
+                    #outfile.write(gls+" ")
+                    outfile.write(hash_escape(gls))
+                outfile.write(r'\\' + "\n")
+            if sptranslation != '':
+                outfile.write("\\glts{" + hash_escape(enclose_single(sptranslation)) + r"}\\" + "\n")
+            if spntranslation != '':
+                outfile.write("\\gltc{" + hash_escape(enclose_single(spntranslation)) + r"}\\" + "\n")
+            if spnfnote != '':
+                outfile.write("\\gltcfn{" + hash_escape(spnfnote) + r"}\\" + "\n")
+            if translation != '':
+                outfile.write("\\glt{" + hash_escape(enclose_single(translation) + r"}\\") + "\n")
+            if engfnote != '':
+                outfile.write("\\gltfn{" + hash_escape(engfnote) + r"}\\" + "\n")
+            outfile.write("\\glend\n")
+            if paragraphidx > 0:
+                outfile.write("\\end{exe}\n")
+            outfile.write("\n")
+
+            # Community texts
+            outcommfile.write("\\begin{exe}\n")
+            outcommfile.write("\\ex\n")
+            outcommfile.write("\\iqu{" + hash_escape(commfullline) + r"}\\" + "\n")
+    #        for cf in linecfs:
+    #            outcommfile.write(hash_escape(cf))
+    #        outcommfile.write(r'\\' + "\n")
+    #        for gls in lineglosses:
+    #            if gls == '':
+    #                gls = "{}"
+    #            #outcommfile.write(gls+" ")
+    #            outcommfile.write(hash_escape(gls))
+            outcommfile.write("\\spq{" + hash_escape(sptranslation) + r"}\\" + "\n")
+            outcommfile.write("\\eng{" + hash_escape(translation) + "}\n")
+            outcommfile.write("\\end{exe}\n\\vspace{-0.20in}\n")
+
+        outfile.close()
+        outcommfile.close()
 
 masterfile.close()
