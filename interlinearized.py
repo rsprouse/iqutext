@@ -288,13 +288,11 @@ for glosslang in ('en', 'es'):
         # Open up a new output file for each text
         outfile = open(nextfilepath,'w', encoding=encoding)
         outfile.write('}\n'.join(lang_to_title_type[glosslang].values()) + '}\n')
-        outfile.write(author + '\n')
-        outfile.write(r'\input{intro-' + titleabbr + '.tex}\n\n')
+        outfile.write(author + '\n\n')
 
         outcommfile = open(nextcommfilepath,'w', encoding=encoding)
         outcommfile.write('}\n'.join(lang_to_title_type[glosslang].values()) + '}\n')
-        outcommfile.write(author + '\n')
-        outcommfile.write(r'\input{intro-' + titleabbr + '.tex}\n\n')
+        outcommfile.write(author + '\n\n')
 
         masterfile.write("\\input{" + fname + "}\n")
 
