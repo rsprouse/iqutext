@@ -234,10 +234,15 @@ for glosslang in ('en', 'es'):
     for text in root.findall('interlinear-text'):
         # Get the title and format it into three different versions
         lang_to_title_type = {
-            'iqu': r'\titi{',
-            'es': r'\tits{',
-            'eu': r'\titc{',
-            'en': r'\tite{',
+            'en': {
+                'iqu': r'%\titi{',
+                'en': r'%\tite{',
+            },
+            'es': {
+                'iqu': r'%\titi{',
+                'eu': r'%\titc{',
+                'es': r'%\tits{',
+            }
         }
 
         titlesection = ''
@@ -249,7 +254,7 @@ for glosslang in ('en', 'es'):
                 if titleitem.attrib['lang'] == 'iqu':   # process \titi value
                     titext = clean_firstline(titext)
                 try:
-                    lang_to_title_type[titleitem.attrib['lang']] += titext
+                    lang_to_title_type[glosslang][titleitem.attrib['lang']] += titext
                 except KeyError:  # skip extra <item type="title" lang="XX"> elements
                     continue
                 # Save rawtitle for the title in the language we want
@@ -259,7 +264,7 @@ for glosslang in ('en', 'es'):
                 titleabbr = titleitem.text
             elif 'type' in titleitem.attrib and titleitem.attrib['type'] == 'source' and  'lang' in titleitem.attrib and titleitem.attrib['lang'] == 'eu':
                 author = r'\auth{' + titleitem.text + '}'
-        lang_to_title_type['iqu'] += f' ({titleabbr})'   # append to \titi line
+        lang_to_title_type[glosslang]['iqu'] += f' ({titleabbr})'   # append to \titi line
 
         title = rawtitle        # title to use for filenames and \include{}
         for char in illegalchars:
@@ -282,12 +287,12 @@ for glosslang in ('en', 'es'):
 
         # Open up a new output file for each text
         outfile = open(nextfilepath,'w', encoding=encoding)
-        outfile.write('}\n'.join(lang_to_title_type.values()) + '}\n')
+        outfile.write('}\n'.join(lang_to_title_type[glosslang].values()) + '}\n')
         outfile.write(author + '\n')
         outfile.write(r'\input{intro-' + titleabbr + '.tex}\n\n')
 
         outcommfile = open(nextcommfilepath,'w', encoding=encoding)
-        outcommfile.write('}\n'.join(lang_to_title_type.values()) + '}\n')
+        outcommfile.write('}\n'.join(lang_to_title_type[glosslang].values()) + '}\n')
         outcommfile.write(author + '\n')
         outcommfile.write(r'\input{intro-' + titleabbr + '.tex}\n\n')
 
