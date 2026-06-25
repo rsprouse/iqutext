@@ -404,7 +404,7 @@ for glosslang in ('en', 'es'):
                                     cf = replace_tones(cf)
                                     cf = replace_spellings(cf)
                                     cf = replace_nums(cf)
-                                if item.attrib['type'] == 'gls':
+                                if item.attrib['type'] == 'gls' and item.attrib['lang'] == glosslang:
                                     gls = killspace(item.text) #.encode("utf-8")
                                     gls = toSmallCaps(gls)
 
@@ -460,15 +460,15 @@ for glosslang in ('en', 'es'):
                     #outfile.write(gls+" ")
                     outfile.write(hash_escape(gls))
                 outfile.write(r'\\' + "\n")
-            if sptranslation != '':
+            if sptranslation != '' and glosslang == 'es':
                 outfile.write("\\glts{" + hash_escape(enclose_single(sptranslation)) + r"}\\" + "\n")
-            if spntranslation != '':
+            if spntranslation != '' and glosslang == 'es':
                 outfile.write("\\gltc{" + hash_escape(enclose_single(spntranslation)) + r"}\\" + "\n")
-            if spnfnote != '':
+            if spnfnote != '' and glosslang == 'es':
                 outfile.write("\\gltcfn{" + hash_escape(spnfnote) + r"}\\" + "\n")
-            if translation != '':
+            if translation != '' and glosslang == 'en':
                 outfile.write("\\glt{" + hash_escape(enclose_single(translation) + r"}\\") + "\n")
-            if engfnote != '':
+            if engfnote != '' and glosslang == 'en':
                 outfile.write("\\gltfn{" + hash_escape(engfnote) + r"}\\" + "\n")
             outfile.write("\\glend\n")
             if paragraphidx > 0:
