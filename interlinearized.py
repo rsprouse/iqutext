@@ -442,8 +442,7 @@ for glosslang in ('en', 'es'):
                             if engfnote == None: engfnote = ""
 
             if paragraphidx > 0:
-                outfile.write("\\begin{exe}\n")
-            outfile.write("\\ex\n")
+                outfile.write("\\ea\\label{ex:" + f'{titleabbr}{paragraphidx}' + "\n")
             if fourline:
                 outfile.write("\\glll \n")
             outfile.write(hash_escape(fullline) + r"\\" + "\n")
@@ -470,14 +469,12 @@ for glosslang in ('en', 'es'):
                 outfile.write("\\glt{" + hash_escape(enclose_single(translation) + r"}\\") + "\n")
             if engfnote != '' and glosslang == 'en':
                 outfile.write("\\gltfn{" + hash_escape(engfnote) + r"}\\" + "\n")
-            outfile.write("\\glend\n")
             if paragraphidx > 0:
-                outfile.write("\\end{exe}\n")
+                outfile.write("\\z\n")
             outfile.write("\n")
 
             # Community texts
-            outcommfile.write("\\begin{exe}\n")
-            outcommfile.write("\\ex\n")
+            outcommfile.write("\\ea\\label{ex:" + f'{titleabbr}{paragraphidx}' + "\n")
             outcommfile.write("\\iqu{" + hash_escape(commfullline) + r"}\\" + "\n")
     #        for cf in linecfs:
     #            outcommfile.write(hash_escape(cf))
@@ -489,7 +486,7 @@ for glosslang in ('en', 'es'):
     #            outcommfile.write(hash_escape(gls))
             outcommfile.write("\\spq{" + hash_escape(sptranslation) + r"}\\" + "\n")
             outcommfile.write("\\eng{" + hash_escape(translation) + "}\n")
-            outcommfile.write("\\end{exe}\n\\vspace{-0.20in}\n")
+            outcommfile.write("\\z\n\\vspace{-0.20in}\n")
 
         outfile.close()
         outcommfile.close()
