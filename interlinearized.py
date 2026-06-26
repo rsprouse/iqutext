@@ -171,6 +171,7 @@ def replace_spellings(w):
             # These must be ordered.
             w = re.sub(r'[sS]([ìÌíÍiI])([àÀáÁaAùÙúÚuU])', r'ʃ\1\2', w)
             w = re.sub(r'[sS]([ìÌíÍiI])', r'ʃ\1', w)
+            w = re.sub(r'‹[^›]*›', lambda m: m.group(0).replace('sh', 'ʃ'), w) # replace 'sh' with 'ʃ' inside single guillemets
             w = w.translate(str.maketrans({'j': 'h', 'J': 'H'}))
             w = w.translate(str.maketrans({'y': 'j', 'Y': 'J'}))
             w = re.sub(rf'([{cchars}])i([{vchars_not_i}])', r'\1ʲ\2', w)
