@@ -70,7 +70,7 @@ def killspace(line) :
     if line == None: line = ""
     line = line.replace("\r",'')
     line = line.replace("\n",'')
-    line = line.replace(' ','.')
+    line = line.replace(' ','~')
     line = line.replace("\t",'')
     return line
 
