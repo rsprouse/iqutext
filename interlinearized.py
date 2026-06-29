@@ -455,7 +455,7 @@ for glosslang in ('en', 'es'):
                             if engfnote == None: engfnote = ""
 
             if paragraphidx > 0:
-                outfile.write("\\ea\\label{ex:" + f'{titleabbr}{paragraphidx}' + "\n")
+                outfile.write("\\ea\\label{ex:" + f'{titleabbr}{paragraphidx}' + "}\n")
             if fourline:
                 outfile.write("\\glll \n")
             outfile.write(hash_escape(fullline) + r"\\" + "\n")
@@ -496,7 +496,7 @@ for glosslang in ('en', 'es'):
             outfile.write("\n")
 
             # Community texts
-            outcommfile.write("\\ea\\label{ex:" + f'{titleabbr}{paragraphidx}' + "\n")
+            outcommfile.write("\\ea\\label{ex:" + f'{titleabbr}{paragraphidx}' + "}\n")
             outcommfile.write("\\iqu{" + hash_escape(commfullline) + r"}\\" + "\n")
     #        for cf in linecfs:
     #            outcommfile.write(hash_escape(cf))
