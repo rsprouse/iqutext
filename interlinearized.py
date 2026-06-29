@@ -291,6 +291,11 @@ for glosslang in ('en', 'es'):
         outfile.write('}\n'.join(lang_to_title_type[glosslang].values()) + '}\n')
         outfile.write(author + '\n\n')
 
+        if glosslang == 'en':
+            parallelfile = open(nextfilepath.replace('glossed', 'parallel'),'w', encoding=encoding)
+            parallelfile.write('}\n'.join(lang_to_title_type[glosslang].values()) + '}\n')
+            parallelfile.write(author + '\n\n')
+
         outcommfile = open(nextcommfilepath,'w', encoding=encoding)
         outcommfile.write('}\n'.join(lang_to_title_type[glosslang].values()) + '}\n')
         outcommfile.write(author + '\n\n')
@@ -299,6 +304,8 @@ for glosslang in ('en', 'es'):
 
         # Go through each "paragraph" and print the 4-line interlinearization for each
 
+        paralleltexts = {'left': [], 'right': []}
+        endparallelblock = False
         for paragraphidx, paragraph in enumerate(text.iter('paragraph')):
             if paragraphidx == 0:
                 continue
@@ -333,6 +340,11 @@ for glosslang in ('en', 'es'):
                 for widx, word in enumerate(words):
                     for item in word:
                         if item.tag == "item" and 'type' in item.attrib:
+
+                            # Check for end of parallel text block
+                            if item.attrib['type'] == 'gls' and item.attrib['lang'] == 'da' and item.text is not None and item.text.strip() == 'B':
+                                endparallelblock = True
+                                continue
 
                             # Encode the word to add to the string.
                             # Add a leading space if it's not punctuation.
@@ -447,6 +459,15 @@ for glosslang in ('en', 'es'):
             if fourline:
                 outfile.write("\\glll \n")
             outfile.write(hash_escape(fullline) + r"\\" + "\n")
+            paralleltexts['left'].append(hash_escape(fullline))
+            paralleltexts['right'].append(hash_escape(translation))
+            if endparallelblock is True and glosslang == 'en':
+                parallelfile.write(r'\begin{Parallel}{0.47\textwidth}{0.47\textwidth}' + '\n')
+                parallelfile.write(r' \ParallelLText{\noindent \textit{' + ' '.join(paralleltexts['left']) + '}}\n')
+                parallelfile.write(r' \ParallelRText{\noindent \textit{' + ' '.join(paralleltexts['right']) + '}}\n')
+                parallelfile.write(r'\end{Parallel}' + '\n')
+                paralleltexts = {'left': [], 'right': []}
+                endparallelblock = False
             if fourline:
     #            for morph in linemorphs:
     #                outfile.write(hash_escape(morph))
@@ -488,8 +509,15 @@ for glosslang in ('en', 'es'):
             outcommfile.write("\\spq{" + hash_escape(sptranslation) + r"}\\" + "\n")
             outcommfile.write("\\eng{" + hash_escape(translation) + "}\n")
             outcommfile.write("\\z\n\\vspace{-0.20in}\n")
+        if len(paralleltexts['left']) > 0 and  glosslang == 'en':
+            parallelfile.write(r'\begin{Parallel}{0.47\textwidth}{0.47\textwidth}' + '\n')
+            parallelfile.write(r' \ParallelLText{\noindent \textit{' + ' '.join(paralleltexts['left']) + '}}\n')
+            parallelfile.write(r' \ParallelRText{\noindent \textit{' + ' '.join(paralleltexts['right']) + '}}\n')
+            parallelfile.write(r'\end{Parallel}' + '\n')
 
         outfile.close()
+        if glosslang == 'en':
+            parallelfile.close()
         outcommfile.close()
 
 masterfile.close()
