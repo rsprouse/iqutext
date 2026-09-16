@@ -390,7 +390,7 @@ for glosslang in ('en', 'es'):
                 for punc in leftsidepunc:
                     fullline = fullline.replace(punc + " ", " " + punc)
                     commfullline = commfullline.replace(punc + " ", " " + punc)
-                nospacepunc = ["-", "\xe2\x80\x94", "\xe2\x80\x93", "»"]
+                nospacepunc = ["-", "\xe2\x80\x94", "\xe2\x80\x93"]
                 for punc in nospacepunc:
                     fullline = fullline.replace(punc + " ", punc)
                 # Add space before emdash
