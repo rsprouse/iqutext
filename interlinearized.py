@@ -150,7 +150,8 @@ def replace_nums(w):
         '5': r'Ø',
         '6': r'\super{H}Ø\super{LL}',
         '7': r'Ø',
-        '8': r'\super{H}Ø\super{LL}'
+        '8': r'\super{H}Ø\super{LL}',
+        '9': r'Ø',
     }
     return w.translate(str.maketrans(mapdict))
 
