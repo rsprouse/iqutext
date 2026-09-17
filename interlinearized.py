@@ -474,8 +474,8 @@ for glosslang in ('en', 'es'):
             paralleltexts['right'].append(hash_escape(translation))
             if endparallelblock is True and glosslang == 'en':
                 parallelfile.write(r'\begin{Parallel}{0.47\textwidth}{0.47\textwidth}' + '\n')
-                parallelfile.write(r' \ParallelLText{\noindent \textit{' + ' '.join(paralleltexts['left']) + '}}\n')
-                parallelfile.write(r' \ParallelRText{\noindent \textit{' + ' '.join(paralleltexts['right']) + '}}\n')
+                parallelfile.write(r' \ParallelLText{\noindent ' + ' '.join(paralleltexts['left']) + '}\n')
+                parallelfile.write(r' \ParallelRText{\noindent ' + ' '.join(paralleltexts['right']) + '}\n')
                 parallelfile.write(r'\end{Parallel}' + '\n' + r'\medskip' + \n')
                 paralleltexts = {'left': [], 'right': []}
                 endparallelblock = False
