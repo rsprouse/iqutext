@@ -139,7 +139,7 @@ def replace_tones(w):
 
 def replace_nums(w):
     '''
-    Replace numerals with latex replacements.
+    Replace numerals with latex replacements. Portions of strings in « » are not modified.
     '''
     mapdict = {
         '0': r'\super{HL}Ø',
@@ -153,7 +153,15 @@ def replace_nums(w):
         '8': r'\super{H}Ø\super{LL}',
         '9': r'Ø',
     }
-    return w.translate(str.maketrans(mapdict))
+    parts = re.split(r'(«[^»]*»)', w)
+
+    for i in range(len(parts)):
+        # Even indices are outside the brackets (modifiable text)
+        # Odd indices are inside the brackets (protected text)
+        if i % 2 == 0:
+            w = parts[i]
+            parts[i] = w.translate(str.maketrans(mapdict))
+    return ''.join(parts)
 
 def replace_spellings(w):
     '''
