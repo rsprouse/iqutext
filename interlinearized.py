@@ -135,7 +135,9 @@ def replace_tones(w):
     '''
     Replace H|L with latex replacements.
     '''
-    return re.sub('(HH|LL|HL|H|L)', r'\\super{\1}', w)
+    w = re.sub('(HH|LL|HL|H|L)', r'\\super{\1}', w)
+    w = w.replace('ʎ', 'L')  # Restore non-tone capital L
+    return w
 
 def replace_nums(w):
     '''
