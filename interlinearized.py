@@ -370,12 +370,12 @@ for glosslang in ('en', 'es'):
                                 fullline += clean_firstline(txt)
                                 commfullline += clean_firstline(txt, community=True)
                             if item.attrib['type'] == 'punct':
-                                if item.text in ("'", '"'):
-                                    txt = f' {item.text}'
-                                    if item.text == "'":
-                                        in_single_quote = not in_single_quote
-                                    if item.text == '"':
-                                        in_double_quote = not in_double_quote
+                                if item.text == "'":
+                                    txt = " '" if in_single_quote else " `"
+                                    in_single_quote = not in_single_quote
+                                if item.text == '"':
+                                    txt = " ''" if in_double_quote else " ``"
+                                    in_double_quote = not in_double_quote
                                 else:
                                     txt = item.text or '' #.encode('utf-8')
                                 if item.text is None:
