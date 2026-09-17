@@ -405,7 +405,7 @@ for glosslang in ('en', 'es'):
                 for punc in nospacepunc:
                     fullline = fullline.replace(punc + " ", punc)
                 # Add space before emdash
-                commfullline = commfullline.replace('—', ' —')
+                commfullline = commfullline.replace('—', '~—')
                 # Remove leading space (necessary?)
                 if fullline[0] == ' ': fullline = fullline[1:]
                 fullline = replace_spellings(fullline)
