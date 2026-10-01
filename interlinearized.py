@@ -367,17 +367,22 @@ for glosslang in ('en', 'es'):
                                     # Replace regular space with nonbreaking space character ~ within item
                                     nonbreakingtxt = item.text.replace(' ', '~')
                                     txt = " " + nonbreakingtxt
+                                txt = txt.replace('ːː', ':')
                                 fullline += clean_firstline(txt)
                                 commfullline += clean_firstline(txt, community=True)
                             if item.attrib['type'] == 'punct':
                                 if item.text == "'":
                                     txt = " '" if in_single_quote else " `"
                                     in_single_quote = not in_single_quote
-                                if item.text == '"':
+                                elif item.text == '"':
                                     txt = " ''" if in_double_quote else " ``"
                                     in_double_quote = not in_double_quote
                                 else:
                                     txt = item.text or '' #.encode('utf-8')
+                                if '|' in txt:
+                                    txt = txt.replace('|', '!')
+                                if '¦' in txt:
+                                    txt = txt.replace('¦', '?')
                                 if item.text is None:
                                     sys.stderr.write('Empty punctuation found\n')
                                     ET.dump(item)
