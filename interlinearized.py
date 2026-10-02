@@ -104,9 +104,21 @@ def toSmallCaps(word):
 
 def enclose_single(x):
     # For future reference, double left/right quotes: “ , ”
-    return f"‘{x}’" if len(x) and not x.startswith("‘") else x
+    return f"`{x}'" if len(x) and not x.startswith("`") else x
 #   if x[0] != "\xe2\x80\x98":
 #    return "\xe2\x80\x98" + x + "\xe2\x80\x99"
+
+def smartquote_to_latex(x):
+    return x \
+        .replace("‘", "`") \
+        .replace("“", "``") \
+        .replace("’", "'") \
+        .replace("”", "''")
+
+def fix_triple_quotes(x):
+    return x \
+        .replace("```", "`{``}") \
+        .replace("'''", "{''}'")
 
 def hash_escape(s):
     '''Escape hash character.'''
@@ -370,11 +382,11 @@ for glosslang in ('en', 'es'):
                                 fullline += clean_firstline(txt)
                                 commfullline += clean_firstline(txt, community=True)
                             if item.attrib['type'] == 'punct':
-                                if item.text == "'":
-                                    txt = " '" if in_single_quote else " `"
+                                if item.text in ["'", "‘", "`", "’"]:
+                                    txt = "'" if in_single_quote else " `"
                                     in_single_quote = not in_single_quote
-                                elif item.text == '"':
-                                    txt = " ''" if in_double_quote else " ``"
+                                elif item.text in ['"', "“", "``", "”"]:
+                                    txt = "''" if in_double_quote else " ``"
                                     in_double_quote = not in_double_quote
                                 else:
                                     txt = item.text or '' #.encode('utf-8')
@@ -473,8 +485,13 @@ for glosslang in ('en', 'es'):
                 outfile.write("\\ea\\label{ex:" + f'{titleabbr}{paragraphidx}' + "}\n")
             if fourline:
                 outfile.write("\\glll \n")
+            translation = translation.replace('ʎ', 'L')   # Restore non-tone capital L
+            translation = smartquote_to_latex(translation)
+            
             fullline = fullline.replace('ʎ', 'L')   # Restore non-tone capital L
+            fullline = smartquote_to_latex(fullline)
             commfullline = commfullline.replace('ʎ', 'L')
+            commfullline = smartquote_to_latex(commfullline)
             outfile.write(hash_escape(fullline) + r"\\" + "\n")
             paralleltexts['left'].append(hash_escape(fullline))
             paralleltexts['right'].append(hash_escape(translation))
@@ -499,13 +516,13 @@ for glosslang in ('en', 'es'):
                     outfile.write(hash_escape(gls))
                 outfile.write(r'\\' + "\n")
             if sptranslation != '' and glosslang == 'es':
-                outfile.write("\\glts{" + hash_escape(enclose_single(sptranslation)) + r"}\\" + "\n")
+                outfile.write("\\glts{" + hash_escape(fix_triple_quotes(enclose_single(sptranslation))) + r"}\\" + "\n")
             if spntranslation != '' and glosslang == 'es':
-                outfile.write("\\gltc{" + hash_escape(enclose_single(spntranslation)) + r"}\\" + "\n")
+                outfile.write("\\gltc{" + hash_escape(fix_triple_quotes(enclose_single(spntranslation))) + r"}\\" + "\n")
             if spnfnote != '' and glosslang == 'es':
                 outfile.write("\\gltcfn{" + hash_escape(spnfnote) + r"}\\" + "\n")
             if translation != '' and glosslang == 'en':
-                outfile.write("\\glt{" + hash_escape(enclose_single(translation) + r"}\\") + "\n")
+                outfile.write("\\glt{" + hash_escape(fix_triple_quotes(enclose_single(translation))) + r"}\\" + "\n")
             if engfnote != '' and glosslang == 'en':
                 outfile.write("\\gltfn{" + hash_escape(engfnote) + r"}\\" + "\n")
             if paragraphidx > 0:
@@ -528,8 +545,8 @@ for glosslang in ('en', 'es'):
             outcommfile.write("\\z\n\\vspace{-0.20in}\n")
         if len(paralleltexts['left']) > 0 and  glosslang == 'en':
             parallelfile.write(r'\begin{Parallel}{0.47\textwidth}{0.47\textwidth}' + '\n')
-            parallelfile.write(r' \ParallelLText{\noindent \textit{' + ' '.join(paralleltexts['left']) + '}}\n')
-            parallelfile.write(r' \ParallelRText{\noindent \textit{' + ' '.join(paralleltexts['right']) + '}}\n')
+            parallelfile.write(r' \ParallelLText{\noindent ' + ' '.join(paralleltexts['left']) + '}\n')
+            parallelfile.write(r' \ParallelRText{\noindent ' + ' '.join(paralleltexts['right']) + '}\n')
             parallelfile.write(r'\end{Parallel}' + '\n')
 
         outfile.close()
