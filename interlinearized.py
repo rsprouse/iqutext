@@ -136,7 +136,6 @@ def replace_tones(w):
     Replace H|L with latex replacements.
     '''
     w = re.sub('(HH|LL|HL|H|L)', r'\\super{\1}', w)
-    w = w.replace('ʎ', 'L')  # Restore non-tone capital L
     return w
 
 def replace_nums(w):
@@ -444,9 +443,9 @@ for glosslang in ('en', 'es'):
                             if txt[-1] == '-' and gls[-1] != '-':
                                 gls = gls + '-'
 
-                        linemorphs.append(txt)
-                        linecfs.append(cf)
-                        lineglosses.append(gls)
+                        linemorphs.append(txt.replace('ʎ', 'L')) # Restore non-tone capital L
+                        linecfs.append(cf.replace('ʎ', 'L'))
+                        lineglosses.append(gls.replace('ʎ', 'L'))
                     linemorphs.append(' ')
                     linecfs.append(' ')
                     lineglosses.append(' ')
@@ -474,6 +473,8 @@ for glosslang in ('en', 'es'):
                 outfile.write("\\ea\\label{ex:" + f'{titleabbr}{paragraphidx}' + "}\n")
             if fourline:
                 outfile.write("\\glll \n")
+            fullline = fullline.replace('ʎ', 'L')   # Restore non-tone capital L
+            commfullline = commfullline.replace('ʎ', 'L')
             outfile.write(hash_escape(fullline) + r"\\" + "\n")
             paralleltexts['left'].append(hash_escape(fullline))
             paralleltexts['right'].append(hash_escape(translation))
