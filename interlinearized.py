@@ -118,7 +118,7 @@ def smartquote_to_latex(x):
 def fix_triple_quotes(x):
     return x \
         .replace("```", "`{``}") \
-        .replace("'''", "{''}'")
+        .replace("'''", "'{''}")
 
 def hash_escape(s):
     '''Escape hash character.'''
