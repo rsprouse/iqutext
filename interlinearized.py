@@ -446,7 +446,8 @@ for glosslang in ('en', 'es'):
                                     cf = replace_nums(cf)
                                 if item.attrib['type'] == 'gls' and item.attrib['lang'] == glosslang:
                                     gls = killspace(item.text) #.encode("utf-8")
-                                    gls = toSmallCaps(gls)
+                                    if bool(re.search(r"[A-Z]{2}", gls)):
+                                        gls = toSmallCaps(gls)
 
                         # Add a hyphen to the beginning or end of a gloss morpheme if the corresponding text has it.
                         if len(txt) and len(gls):
