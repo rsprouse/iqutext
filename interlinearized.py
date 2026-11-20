@@ -138,7 +138,7 @@ def clean_firstline(w, community=False):
     '''
     if re.match(r'^\s*\d+\s*$', w) and community is False:
         return ' {}'
-    w = re.sub(r'\d', '', w)
+    w = replace_nums(w)
     if community is False:
         w = w.replace('=', '')
     return w
