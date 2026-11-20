@@ -138,18 +138,10 @@ def clean_firstline(w, community=False):
     '''
     if re.match(r'^\s*\d+\s*$', w) and community is False:
         return ' {}'
-
-    parts = re.split(r'(«[^»]*»)', w)
-
-    for i in range(len(parts)):
-        # Even indices are outside the brackets (modifiable text)
-        # Odd indices are inside the brackets (protected text)
-        if i % 2 == 0:
-            w = parts[i]
-            w = re.sub(r'\d', '', w)
-            if community is False:
-                w = w.replace('=', '')
-    return ''.join(parts)
+    w = re.sub(r'\d', '', w)
+    if community is False:
+        w = w.replace('=', '')
+    return w
 
 def replace_tones(w):
     '''
