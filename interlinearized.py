@@ -104,7 +104,7 @@ def toSmallCaps(word):
 
 def enclose_single(x):
     # For future reference, double left/right quotes: “ , ”
-    return f"`{x}'" if len(x) and not x.startswith("`") else x
+    return f"`{x}'" if len(x) else x
 #   if x[0] != "\xe2\x80\x98":
 #    return "\xe2\x80\x98" + x + "\xe2\x80\x99"
 
