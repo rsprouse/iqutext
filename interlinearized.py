@@ -373,7 +373,7 @@ for glosslang in ('en', 'es'):
 
                             if item.attrib['type'] == 'txt' or item.attrib['type'] == 'cf':
                                 if in_single_quote or in_double_quote:
-                                    txt = item.text #.encode('utf-8')
+                                    txt = " " + item.text #.encode('utf-8')
                                 else:
                                     # Replace regular space with nonbreaking space character ~ within item
                                     nonbreakingtxt = item.text.replace(' ', '~')
